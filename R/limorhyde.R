@@ -33,9 +33,10 @@ limorhyde = function(df, timeColname, period=24, sinusoid=TRUE, nKnots=3) {
 		knots = seq(0, period - period / nKnots, length=nKnots)
 		# when bigsplines is updated, should be changed to bigsplines::ssBasis
 		x = ssBasis(df[[timeColname]] %% period, knots=knots, xmin=0, xmax=period, periodic=TRUE)$X
+		x = as.data.frame(x)
 		colnames(x) = paste0(timeColname, '_knot', 1:nKnots)}
 
-	dfNew = data.frame(df, x)
+	dfNew = dplyr::bind_cols(df, x)
 	timeColnames = colnames(dfNew)[(ncol(df)+1):ncol(dfNew)]
 	return(list(df=dfNew, timeColnames=timeColnames))}
 
