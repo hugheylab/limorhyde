@@ -1,0 +1,11 @@
+Package: limorhyde
+Title: Linear Models for Rhythmicity (Design)
+Version: 0.0.0.9000
+Authors@R: person("Jake", "Hughey", email = "jakejhughey@gmail.com", role = c("aut", "cre"))
+Description: A simple approach to enable differential rhythmicity analysis of circadian
+    transcriptome data using state-of-the-art methods for differential expression.
+Depends: R (>= 3.4.2)
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
