@@ -11,5 +11,6 @@ limoResult = limorhyde(df, 'zt')
 limoResult$df
 limoResult$timeColnames
 
-# create a design matrix for differential rhythmicity analysis
+# create a design matrix that could be used with methods such as limma,
+# in order to detect differentially rhythmic genes
 design = model.matrix(~ genotype * (zt_cos + zt_sin), data=limoResult$df)

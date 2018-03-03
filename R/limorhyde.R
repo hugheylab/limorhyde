@@ -14,7 +14,7 @@
 #' is FALSE.
 #'
 #' @return A list.
-#' \item{df}{Data frame, consisting of the input data frame and the new columns for the time
+#' \item{df}{Data frame consisting of the input data frame and the new columns for the time
 #' decomposition, that can be used to construct a design matrix for differential rhythmicity analysis.}
 #' \item{timeColnames}{Character vector containing the colnames for the time decomposition.}
 #'
