@@ -1,22 +1,18 @@
 #' Convert a periodic time variable into components usable in linear models
 #'
-#' \code{limorhyde} decomposes a periodic time variable into multiple components, which enables
-#' detection of differential rhythmicity using state-of-the-art methods for differential expression.
+#' `limorhyde` decomposes a periodic time variable into multiple components based on either
+#' the first harmonic of a Fourier series or on a periodic smoothing spline.
 #'
 #' @param df Data frame containing one row for each sample.
-#' @param timeColname Character string indicating the column in \code{df} that contains the time
+#' @param timeColname Character string indicating the column in `df` that contains the time
 #' at which each sample was acquired.
 #' @param period Number corresponding to the period to use for the decomposition
-#' (in units of the values in \code{timeColname}).
-#' @param sinusoid If TRUE, a sinusoidal decomposition (sine and cosine) is performed.
-#' If FALSE, a periodic spline decomposition is performed.
-#' @param nKnots Number of knots in the periodic spline decomposition. Only used if \code{sinusoid}
-#' is FALSE.
+#' (in units of the values in `timeColname`).
+#' @param sinusoid If `TRUE`, the decomposition is based on sine and cosine curves. If `FALSE`,
+#' the decomposition is based on a periodic smoothing spline.
+#' @param nKnots Number of knots for the periodic spline. Only used if `sinusoid` is `FALSE`.
 #'
-#' @return A list.
-#' \item{df}{Data frame consisting of the input data frame and the new columns for the time
-#' decomposition, that can be used to construct a design matrix for differential rhythmicity analysis.}
-#' \item{timeColnames}{Character vector containing the colnames for the time decomposition.}
+#' @return A data frame with a row for each sample and a column for each component of the time decomposition.
 #'
 #' @example R/limorhyde_example.R
 #'
@@ -26,19 +22,20 @@ limorhyde = function(df, timeColname, period=24, sinusoid=TRUE, nKnots=3) {
 		stop('timeColname must be a named column in df.')}
 
 	if (sinusoid) {
-		x = data.frame(tsin = cos(df[[timeColname]] / period * 2 * pi),
-							tcos = sin(df[[timeColname]] / period * 2 * pi))
-		colnames(x) = paste(timeColname, c('cos', 'sin'), sep='_')
+		d = data.frame(tcos = cos(df[[timeColname]] / period * 2 * pi),
+							tsin = sin(df[[timeColname]] / period * 2 * pi))
+		colnames(d) = paste0(timeColname, c('_cos', '_sin'))
 	} else {
 		knots = seq(0, period - period / nKnots, length=nKnots)
 		# when bigsplines is updated, should be changed to bigsplines::ssBasis
-		x = ssBasis(df[[timeColname]] %% period, knots=knots, xmin=0, xmax=period, periodic=TRUE)$X
-		x = as.data.frame(x)
-		colnames(x) = paste0(timeColname, '_knot', 1:nKnots)}
+		d = ssBasis(df[[timeColname]] %% period, knots=knots, xmin=0, xmax=period, periodic=TRUE)$X
+		d = as.data.frame(d)
+		colnames(d) = paste0(timeColname, '_knot', 1:nKnots)}
 
-	dfNew = dplyr::bind_cols(df, x)
-	timeColnames = colnames(dfNew)[(ncol(df)+1):ncol(dfNew)]
-	return(list(df=dfNew, timeColnames=timeColnames))}
+	# dfNew = dplyr::bind_cols(df, x)
+	# timeColnames = colnames(dfNew)[(ncol(df)+1):ncol(dfNew)]
+	return(d)}
+	# return(list(df=dfNew, timeColnames=timeColnames))}
 
 
 ssBasis = function(x, knots, m=2, d=0, xmin=min(x), xmax=max(x), periodic=FALSE, intercept=FALSE) {

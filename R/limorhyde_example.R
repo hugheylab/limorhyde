@@ -6,11 +6,10 @@ df = data.frame(
    zt = rep(seq(0, 24-24/nSamples*2, 24/nSamples*2), times=2),
    stringsAsFactors=FALSE)
 
-# call limorhyde and examine its output
-limoResult = limorhyde(df, 'zt')
-limoResult$df
-limoResult$timeColnames
+# call limorhyde
+limo = limorhyde(df, 'zt')
+colnames(limo)
+df = cbind(df, limo)
 
-# create a design matrix that could be used with methods such as limma,
-# in order to detect differentially rhythmic genes
-design = model.matrix(~ genotype * (zt_cos + zt_sin), data=limoResult$df)
+# create a design matrix that could be used with methods such as limma
+design = model.matrix(~ genotype * (zt_cos + zt_sin), data=df)

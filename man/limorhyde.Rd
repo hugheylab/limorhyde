@@ -15,21 +15,17 @@ at which each sample was acquired.}
 \item{period}{Number corresponding to the period to use for the decomposition
 (in units of the values in \code{timeColname}).}
 
-\item{sinusoid}{If TRUE, a sinusoidal decomposition (sine and cosine) is performed.
-If FALSE, a periodic spline decomposition is performed.}
+\item{sinusoid}{If \code{TRUE}, the decomposition is based on sine and cosine curves. If \code{FALSE},
+the decomposition is based on a periodic smoothing spline.}
 
-\item{nKnots}{Number of knots in the periodic spline decomposition. Only used if \code{sinusoid}
-is FALSE.}
+\item{nKnots}{Number of knots for the periodic spline. Only used if \code{sinusoid} is \code{FALSE}.}
 }
 \value{
-A list.
-\item{df}{Data frame, consisting of the input data frame and the new columns for the time
-decomposition, that can be used to construct a design matrix for differential rhythmicity analysis.}
-\item{timeColnames}{Character vector containing the colnames for the time decomposition.}
+A data frame with a row for each sample and a column for each component of the time decomposition.
 }
 \description{
-\code{limorhyde} decomposes a periodic time variable into multiple components, which enables
-detection of differential rhythmicity using state-of-the-art methods for differential expression.
+\code{limorhyde} decomposes a periodic time variable into multiple components based on either
+the first harmonic of a Fourier series or on a periodic smoothing spline.
 }
 \examples{
 # create an example data frame
@@ -40,11 +36,11 @@ df = data.frame(
    zt = rep(seq(0, 24-24/nSamples*2, 24/nSamples*2), times=2),
    stringsAsFactors=FALSE)
 
-# call limorhyde and examine its output
-limoResult = limorhyde(df, 'zt')
-limoResult$df
-limoResult$timeColnames
+# call limorhyde
+limo = limorhyde(df, 'zt')
+colnames(limo)
+df = cbind(df, limo)
 
-# create a design matrix for differential rhythmicity analysis
-design = model.matrix(~ genotype * (zt_cos + zt_sin), data=limoResult$df)
+# create a design matrix that could be used with methods such as limma
+design = model.matrix(~ genotype * (zt_cos + zt_sin), data=df)
 }
