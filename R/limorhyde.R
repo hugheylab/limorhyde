@@ -32,10 +32,7 @@ limorhyde = function(df, timeColname, period=24, sinusoid=TRUE, nKnots=3) {
 		d = as.data.frame(d)
 		colnames(d) = paste0(timeColname, '_knot', 1:nKnots)}
 
-	# dfNew = dplyr::bind_cols(df, x)
-	# timeColnames = colnames(dfNew)[(ncol(df)+1):ncol(dfNew)]
 	return(d)}
-	# return(list(df=dfNew, timeColnames=timeColnames))}
 
 
 ssBasis = function(x, knots, m=2, d=0, xmin=min(x), xmax=max(x), periodic=FALSE, intercept=FALSE) {
