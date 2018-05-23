@@ -64,7 +64,7 @@ sm = bind_cols(sm, limorhyde(sm, 'time'))
 Now, we populate the expression set and expression matrix for our dataset.
 ```{r}
 eset = gse$GSE34018_series_matrix.txt.gz
-emat = exprs(eset[,sm$sample])
+emat = log(Biobase::exprs(eset[,sm$sample]))
 ```
 
 ## Identifying Rhythmic Genes
