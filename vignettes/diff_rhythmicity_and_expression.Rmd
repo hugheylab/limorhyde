@@ -173,8 +173,3 @@ ggplot(data = deLimma) +
   geom_point(aes(x = logFC, y = -log10(adj.P.Val)), size = 0.2) + 
   labs(title ="Differential Expression", x = expression(log[2]*'(fold-change)'), y = expression(-log[10]*'('*q[DE]*')'))
 ```
-
-```{r, message=FALSE}
-ggplot(data = drLimma) +
-  geom_point(aes(x = condReverb.alpha.beta.DKO.time_cos, y = condReverb.alpha.beta.DKO.time_sin), size = 0.2)
-```
