@@ -161,3 +161,23 @@ ggplot(data = deLimma) +
   geom_point(aes(x = logFC, y = -log10(adj.P.Val)), size = 0.2) + 
   labs(title ="Differential Expression", x = expression(log[2]*'(fold-change)'), y = expression(-log[10]*'('*q[DE]*')'))
 ```
+
+```{r message=FALSE}
+geneIdsNow = deLimma$geneId[1:3]
+
+df = as_tibble(t(emat[geneIdsNow,]))
+df$sample = colnames(emat[geneIdsNow,])
+
+df = inner_join(sm, df, by='sample') %>%
+	select(sample, cond, time, !!geneIdsNow) %>%
+	gather(key='geneSymbol', value='expr', !!geneIdsNow)
+df$cond = fct_recode(df$cond, 'wild-type'='wild-type', 'knock-out'='Reverb alpha/beta DKO')
+
+ggplot(df) +
+	facet_grid(geneSymbol ~ cond, scales='free_y') +
+	geom_point(aes(x=time, y=expr, shape=cond), size=1.5) +
+	labs(x='Zeitgeber time (h)', y='Expression (norm.)') +
+	scale_shape(solid=FALSE, guide=FALSE) +
+	scale_color_brewer(type='qual', palette='Dark2', guide=FALSE) +
+	scale_x_continuous(limits=c(0, 24), breaks=seq(0, 24, 6))
+```
