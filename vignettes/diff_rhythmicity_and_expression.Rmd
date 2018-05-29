@@ -175,7 +175,7 @@ df$cond = fct_recode(df$cond, 'wild-type'='wild-type', 'knock-out'='Reverb alpha
 
 ggplot(df) +
 	facet_grid(geneSymbol ~ cond, scales='free_y') +
-	geom_point(aes(x=time, y=expr, shape=cond), size=1.5) +
+	geom_point(aes(x=time, y=expr, shape=cond, color=geneSymbol), size=1.5) +
 	labs(x='Zeitgeber time (h)', y='Expression (norm.)') +
 	scale_shape(solid=FALSE, guide=FALSE) +
 	scale_color_brewer(type='qual', palette='Dark2', guide=FALSE) +
