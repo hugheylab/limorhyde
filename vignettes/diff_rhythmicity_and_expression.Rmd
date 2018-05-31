@@ -118,12 +118,12 @@ qvalDrCutoff = 0.1
 ```{r}
 # I would put this below the code block that generates rhyRain.
 rhyGenes = rhyRain %>%
-		group_by(geneId) %>%
-		summarize(pVal = min(pVal)) %>%
-		group_by() %>%
-		mutate(qval = p.adjust(pVal, method='BH')) %>%
-		filter(qval <= qvalRhyCutoff) %>%
-		arrange(qval)
+  group_by(geneId) %>%
+  summarize(pVal = min(pVal)) %>%
+  group_by() %>%
+  mutate(qval = p.adjust(pVal, method='BH')) %>%
+  filter(qval <= qvalRhyCutoff) %>%
+  arrange(qval)
 ```
 
 Calculate differential rhythmicity of rhythmic genes, based on interactions between `cond` and the two `time` components.
@@ -177,14 +177,14 @@ df = as_tibble(t(emat[geneIdsNow,]))
 df$sample = colnames(emat[geneIdsNow,])
 
 df = inner_join(sm, df, by='sample') %>%
-	select(sample, cond, time, !!geneIdsNow) %>%
-	gather(key='geneSymbol', value='expr', !!geneIdsNow)
+  select(sample, cond, time, !!geneIdsNow) %>%
+  gather(key='geneSymbol', value='expr', !!geneIdsNow)
 
 ggplot(df) +
-	facet_grid(geneSymbol ~ cond, scales='free_y') +
-	geom_point(aes(x=time, y=expr, shape=cond, color=geneSymbol), size=1.5) +
-	labs(x='Zeitgeber time (h)', y='Expression (norm.)') +
-	scale_shape(solid=FALSE, guide=FALSE) +
-	scale_color_brewer(type='qual', palette='Dark2', guide=FALSE) +
-	scale_x_continuous(limits=c(0, 24), breaks=seq(0, 24, 6))
+  facet_grid(geneSymbol ~ cond, scales='free_y') +
+  geom_point(aes(x=time, y=expr, shape=cond, color=geneSymbol), size=1.5) +
+  labs(x='Zeitgeber time (h)', y='Expression (norm.)') +
+  scale_shape(solid=FALSE, guide=FALSE) +
+  scale_color_brewer(type='qual', palette='Dark2', guide=FALSE) +
+  scale_x_continuous(limits=c(0, 24), breaks=seq(0, 24, 6))
 ```
