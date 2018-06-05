@@ -22,6 +22,8 @@ In this first stage, we will be gathering experimental data from the [GSE34018](
 ### Load Necessary Packages
 
 ```{r, message=FALSE}
+# you should incorporate all the same changes to the vignette that I made to your analysis code
+library(annotate)
 library(limorhyde)
 library(GEOquery)
 library(tidyverse)
@@ -30,6 +32,7 @@ library(limma)
 library(rain)
 library(foreach)
 library(ggplot2)
+library('org.Mm.eg.db')
 ```
 
 We need to define q-value thresholds for rhythmic and differentially rhythmic genes.
@@ -68,10 +71,56 @@ We can now apply LimoRhyde to our dataset by appending two new columns to the me
 sm = bind_cols(sm, limorhyde(sm, 'time'))
 ```
 
+
+Applying the following optional steps allow us to use the gene symbol names in the subsequent plots.
+```{r message=FALSE}
+getGeneProbeMappingAnno = function(featureDf, dbName, interName) {
+	mappingProbeIntermediate = featureDf[!is.na(featureDf[,interName]) & featureDf[,interName]!='', c('ID', interName)]
+	colnames(mappingProbeIntermediate) = c('probeSet', 'geneInter')
+
+	mapTmp1 = eval(parse(text=sprintf('%s.db::%s', substr(dbName, 1, 9), dbName)))
+	mapTmp2 = AnnotationDbi::mappedkeys(mapTmp1)
+	mapTmp3 = as.list(mapTmp1[mapTmp2])
+	geneId = do.call(c, mapTmp3)
+
+	geneInter = do.call(c, mapply(function(inter, len) rep_len(inter, len), names(mapTmp3), sapply(mapTmp3, length),
+											SIMPLIFY=FALSE))
+	if (dbName=='org.Hs.egUNIGENE2EG') {
+		geneInter = sub('Hs.', '', geneInter, fixed=TRUE)}
+	mappingIdInter = data.frame(geneId, geneInter, stringsAsFactors=FALSE)
+	return(merge(mappingIdInter, mappingProbeIntermediate, by='geneInter', sort=FALSE))}
+
+calcExprsByGene = function(eset, mapping) {
+	geneIds = unique(mapping[,'geneId'])
+	exprsByGene = matrix(nrow=length(geneIds), ncol=ncol(eset), dimnames=list(geneIds, Biobase::sampleNames(eset)))
+	for (geneId in geneIds) {
+		exprsTmp = exprs(eset)[mapping[mapping[,'geneId']==geneId, 'probeSet'],, drop=FALSE]
+		if (nrow(exprsTmp)==1) {
+			exprsByGene[geneId,] = exprsTmp
+		} else {
+			exprsByGene[geneId,] = matrixStats::rowMedians(t(exprsTmp), na.rm=TRUE)}}
+	return(exprsByGene)}
+
+fixGeoSampleNames = function(sampleNames) {
+	sampleNames = paste0(toupper(sampleNames), '_')
+	regexResult = regexpr('^GSM[0-9]+[^0-9]', sampleNames)
+	sampleNamesNew = mapply(function(sampleName, matchLength) substr(sampleName, 1, matchLength-1), sampleNames,
+									attr(regexResult, 'match.length'))
+	return(unname(sampleNamesNew))}
+```
+
+```{r message=FALSE}
+featureDf = pData(featureData(gse$GSE34018_series_matrix.txt.gz))
+idx = sapply(featureDf, is.factor)
+featureDf[idx] = lapply(featureDf[idx], as.character)
+
+featureDf[,'RefSeq'] = sapply(featureDf[,'GB_ACC'], function(x) strsplit(x, split='.', fixed=TRUE)[[1]][1])
+mapping = getGeneProbeMappingAnno(featureDf, dbName='org.Mm.egREFSEQ2EG', interName='RefSeq')
+```
+
 Now, we populate the expression set and expression matrix for our dataset.
 ```{r}
-eset = gse$GSE34018_series_matrix.txt.gz
-emat = log2(Biobase::exprs(eset[,sm$sample]))
+emat = log2(calcExprsByGene(gse$GSE34018_series_matrix.txt.gz, mapping))
 ```
 
 ## Identifying rhythmic genes
@@ -101,7 +150,7 @@ rownames(rhyRain) = NULL
 kable(rhyRain[1:5,])
 ```
 
-<<Explain what the code below is doing.>>
+After applying RAIN to our dataset, we can use the q-values of rhythmicity to filter the genes, leaving us with only genes whose q-values fall below our predefined threshold.
 ```{r}
 rhyGenes = rhyRain %>%
   group_by(geneId) %>%
@@ -153,26 +202,29 @@ kable(deLimma[1:5,])
 ## Plotting the results
 
 We have many options for plotting. One is to make a volcano plot of differentially expressed genes.
-```{r fig.width=7, fig.height=4, message=FALSE}
+```{r fig.width=6, fig.height=4, message=FALSE}
 ggplot(data = deLimma) +
   geom_point(aes(x = logFC, y = -log10(adj.P.Val)), size = 0.2) + 
   coord_fixed(0.2) + 
-  labs(title ="Differential Expression", x = expression(log[2]*'(fold-change)'), y = expression(-log[10]*'('*q[DE]*')'))
+  labs(x = expression(log[2]*'(fold-change)'), y = expression(-log[10]*'('*q[DE]*')'))
 ```
 
 We can also plot expression as a function of time and genotype for individual genes. These plots show expression over time of, in order, the most differentially expressive gene, most differentially rhythmic gene, and most rhythmic gene.
-```{r fig.width=7, fig.height=4, message=FALSE}
+```{r fig.width=6, fig.height=4, message=FALSE}
 geneIdsNow = c(deLimma$geneId[1], drLimma$geneId[1], rhyGenes$geneId[1])
+geneSymbolsNow = getSYMBOL(geneIdsNow, 'org.Mm.eg.db')
 
 df = as_tibble(t(emat[geneIdsNow,]))
+colnames(df) = geneSymbolsNow
 df$sample = colnames(emat[geneIdsNow,])
 
-df = inner_join(sm, df, by = 'sample') %>%
-  select(sample, cond, time, !!geneIdsNow) %>%
-  gather(key = 'geneSymbol', value = 'expr', !!geneIdsNow)
+df = df %>%
+  inner_join(sm, by = 'sample') %>%
+  select(sample, cond, time, geneSymbolsNow) %>%
+  gather(key = 'geneSymbol', value = 'expr', !!geneSymbolsNow)
 
 ggplot(df) +
-  facet_grid(geneSymbol ~ cond, scales='free_y') +
+  facet_grid(factor(geneSymbol) ~ factor(cond), scales='free_y') +
   geom_point(aes(x = time, y = expr, shape = cond, color = geneSymbol), size = 1.5) +
   labs(x = 'Zeitgeber time (h)', y = 'Expression (norm.)') +
   scale_shape(solid = FALSE, guide = FALSE) +
