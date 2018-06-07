@@ -22,7 +22,7 @@ In this first stage, we will be gathering experimental data from the [GSE34018](
 ### Load Necessary Packages
 
 ```{r, message=FALSE}
-# you should incorporate all the same changes to the vignette that I made to your analysis code
+# TODO: incorporate all the same changes to the vignette that I made to your analysis code
 library(annotate)
 library(limorhyde)
 library(GEOquery)
@@ -32,7 +32,7 @@ library(limma)
 library(rain)
 library(foreach)
 library(ggplot2)
-library('org.Mm.eg.db')
+library(org.Mm.eg.db)
 ```
 
 We need to define q-value thresholds for rhythmic and differentially rhythmic genes.
@@ -94,7 +94,7 @@ calcExprsByGene = function(eset, mapping) {
 	geneIds = unique(mapping[,'geneId'])
 	exprsByGene = matrix(nrow=length(geneIds), ncol=ncol(eset), dimnames=list(geneIds, Biobase::sampleNames(eset)))
 	for (geneId in geneIds) {
-		exprsTmp = exprs(eset)[mapping[mapping[,'geneId']==geneId, 'probeSet'],, drop=FALSE]
+		exprsTmp = Biobase::exprs(eset)[mapping[mapping[,'geneId']==geneId, 'probeSet'],, drop=FALSE]
 		if (nrow(exprsTmp)==1) {
 			exprsByGene[geneId,] = exprsTmp
 		} else {
@@ -218,6 +218,9 @@ df = as_tibble(t(emat[geneIdsNow,]))
 colnames(df) = geneSymbolsNow
 df$sample = colnames(emat[geneIdsNow,])
 
+# TODO: the command below can't work, because columns named cond, time, and geneSymbolsNow don't exist
+# TODO: look up what the double exclamation points do in the gather function
+# TODO: order genes (and revise text) to show rhythmic gene, diff. rhythmic gene, and diff. expressed gene
 df = df %>%
   inner_join(sm, by = 'sample') %>%
   select(sample, cond, time, geneSymbolsNow) %>%
