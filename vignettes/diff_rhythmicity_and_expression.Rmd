@@ -55,7 +55,7 @@ sm = as_tibble(pData(phenoData(gse[[1]]))) %>%
             genotype = `genotype/variation:ch1`,
             time = as.numeric(sub("_.*", "", sub(".*_ZT", "", title))),
             cond = factor(genotype, c('wild-type', 'Reverb alpha/beta DKO'), c('wild-type', 'knockout'))) %>%
-  arrange(time)
+  arrange(cond, time)
 
 kable(sm[1:5,])
 ```
@@ -68,38 +68,38 @@ sm = bind_cols(sm, limorhyde(sm, 'time'))
 Applying the following optional steps allow us to use the gene symbol names in the subsequent plots.
 ```{r message=FALSE}
 getGeneProbeMappingAnno = function(featureDf, dbName, interName) {
-	mappingProbeIntermediate = featureDf[!is.na(featureDf[,interName]) & featureDf[,interName] != '', c('ID', interName)]
-	colnames(mappingProbeIntermediate) = c('probeSet', 'geneInter')
+  mappingProbeIntermediate = featureDf[!is.na(featureDf[,interName]) & featureDf[,interName] != '', c('ID', interName)]
+  colnames(mappingProbeIntermediate) = c('probeSet', 'geneInter')
 
-	mapTmp1 = eval(parse(text = sprintf('%s.db::%s', substr(dbName, 1, 9), dbName)))
-	mapTmp2 = AnnotationDbi::mappedkeys(mapTmp1)
-	mapTmp3 = as.list(mapTmp1[mapTmp2])
-	geneId = do.call(c, mapTmp3)
+  mapTmp1 = eval(parse(text = sprintf('%s.db::%s', substr(dbName, 1, 9), dbName)))
+  mapTmp2 = AnnotationDbi::mappedkeys(mapTmp1)
+  mapTmp3 = as.list(mapTmp1[mapTmp2])
+  geneId = do.call(c, mapTmp3)
 
-	geneInter = do.call(c, mapply(function(inter, len) rep_len(inter, len), names(mapTmp3), sapply(mapTmp3, length),
-											SIMPLIFY = FALSE))
-	if (dbName == 'org.Hs.egUNIGENE2EG') {
-		geneInter = sub('Hs.', '', geneInter, fixed = TRUE)}
-	mappingIdInter = data.frame(geneId, geneInter, stringsAsFactors = FALSE)
-	return(merge(mappingIdInter, mappingProbeIntermediate, by = 'geneInter', sort = FALSE))}
+  geneInter = do.call(c, mapply(function(inter, len) rep_len(inter, len), names(mapTmp3), sapply(mapTmp3, length),
+                      SIMPLIFY = FALSE))
+  if (dbName == 'org.Hs.egUNIGENE2EG') {
+    geneInter = sub('Hs.', '', geneInter, fixed = TRUE)}
+  mappingIdInter = data.frame(geneId, geneInter, stringsAsFactors = FALSE)
+  return(merge(mappingIdInter, mappingProbeIntermediate, by = 'geneInter', sort = FALSE))}
 
 calcExprsByGene = function(eset, mapping) {
-	geneIds = unique(mapping[,'geneId'])
-	exprsByGene = matrix(nrow = length(geneIds), ncol = ncol(eset), dimnames = list(geneIds, Biobase::sampleNames(eset)))
-	for (geneId in geneIds) {
-		exprsTmp = Biobase::exprs(eset)[mapping[mapping[,'geneId'] == geneId, 'probeSet'], , drop = FALSE]
-		if (nrow(exprsTmp) == 1) {
-			exprsByGene[geneId,] = exprsTmp
-		} else {
-			exprsByGene[geneId,] = matrixStats::rowMedians(t(exprsTmp), na.rm = TRUE)}}
-	return(exprsByGene)}
+  geneIds = unique(mapping[,'geneId'])
+  exprsByGene = matrix(nrow = length(geneIds), ncol = ncol(eset), dimnames = list(geneIds, Biobase::sampleNames(eset)))
+  for (geneId in geneIds) {
+    exprsTmp = Biobase::exprs(eset)[mapping[mapping[,'geneId'] == geneId, 'probeSet'], , drop = FALSE]
+    if (nrow(exprsTmp) == 1) {
+      exprsByGene[geneId,] = exprsTmp
+    } else {
+      exprsByGene[geneId,] = matrixStats::rowMedians(t(exprsTmp), na.rm = TRUE)}}
+  return(exprsByGene)}
 
 fixGeoSampleNames = function(sampleNames) {
-	sampleNames = paste0(toupper(sampleNames), '_')
-	regexResult = regexpr('^GSM[0-9]+[^0-9]', sampleNames)
-	sampleNamesNew = mapply(function(sampleName, matchLength) substr(sampleName, 1, matchLength - 1), sampleNames,
-									attr(regexResult, 'match.length'))
-	return(unname(sampleNamesNew))}
+  sampleNames = paste0(toupper(sampleNames), '_')
+  regexResult = regexpr('^GSM[0-9]+[^0-9]', sampleNames)
+  sampleNamesNew = mapply(function(sampleName, matchLength) substr(sampleName, 1, matchLength - 1), sampleNames,
+                  attr(regexResult, 'match.length'))
+  return(unname(sampleNamesNew))}
 ```
 
 ```{r message=FALSE}
@@ -113,7 +113,7 @@ mapping = getGeneProbeMappingAnno(featureDf, dbName = 'org.Mm.egREFSEQ2EG', inte
 
 Now, we populate the expression set and expression matrix for our dataset.
 ```{r}
-emat = log2(calcExprsByGene(gse$GSE34018_series_matrix.txt.gz, mapping))
+emat = log2(calcExprsByGene(gse$GSE34018_series_matrix.txt.gz, mapping))[,sm$sample]
 ```
 
 ## Identifying rhythmic genes
@@ -206,23 +206,20 @@ ggplot(data = deLimma) +
 We can also plot expression as a function of time and genotype for individual genes. These plots show expression over time of, in order, the most most rhythmic gene, most differentially rhythmic gene, and most differentially expressive gene.
 ```{r fig.width=6, fig.height=4, message=FALSE}
 geneIdsNow = c(rhyGenes$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
-geneSymbolsNow = getSYMBOL(geneIdsNow, 'org.Mm.eg.db')
+geneSymbolsNow = unname(getSYMBOL(geneIdsNow, 'org.Mm.eg.db'))
 
 df = as_tibble(t(emat[geneIdsNow,]))
 colnames(df) = geneSymbolsNow
 df$sample = colnames(emat[geneIdsNow,])
-
-# TODO: the command below can't work, because columns named cond, time, and geneSymbolsNow don't exist
-# TODO: look up what the double exclamation points do in the gather function
-# TODO: order genes (and revise text) to show rhythmic gene, diff. rhythmic gene, and diff. expressed gene
 df = df %>%
   inner_join(sm, by = 'sample') %>%
   select(sample, cond, time, geneSymbolsNow) %>%
-  gather(key = 'geneSymbol', value = 'expr', geneSymbolsNow)
+  gather(key = 'geneSymbol', value = 'expr', geneSymbolsNow) %>%
+  mutate(geneSymbol = factor(geneSymbol, levels = geneSymbolsNow))
 
 ggplot(df) +
-  facet_grid(factor(geneSymbol) ~ factor(cond), scales='free_y') +
-  geom_point(aes(x = time, y = expr, shape = cond, color = geneSymbol), size = 1.5) +
+  facet_grid(geneSymbol ~ cond, scales='free_y') +
+  geom_point(aes(x = time, y = expr, shape = cond, color = geneSymbol), size = 2) +
   labs(x = 'Zeitgeber time (h)', y = 'Expression (norm.)') +
   scale_shape(solid = FALSE, guide = FALSE) +
   scale_color_brewer(type = 'qual', palette = 'Dark2', guide = FALSE) +
