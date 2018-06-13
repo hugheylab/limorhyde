@@ -203,7 +203,7 @@ ggplot(data = deLimma) +
   labs(x = expression(log[2]*'(fold-change)'), y = expression(-log[10]*'('*q[DE]*')'))
 ```
 
-We can also plot expression as a function of time and genotype for individual genes. These plots show expression over time of, in order, the most most rhythmic gene, most differentially rhythmic gene, and most differentially expressive gene.
+We can also plot expression as a function of time and genotype for individual genes. These plots show expression over time of, in order, the most most rhythmic gene, most differentially rhythmic gene, and most differentially expressed gene.
 ```{r fig.width=6, fig.height=4, message=FALSE}
 geneIdsNow = c(rhyGenes$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
 geneSymbolsNow = unname(getSYMBOL(geneIdsNow, 'org.Mm.eg.db'))
