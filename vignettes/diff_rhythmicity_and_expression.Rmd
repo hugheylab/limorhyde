@@ -13,7 +13,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 ```
 
-LimoRhyde is a framework for differential analysis of rhythmic transcriptome data. Here we go through the typical steps of an analysis: identifying rhythmic genes, identifying differentially rhythmic genes, and identifying differentially expressed genes. This example is based on a dataset of gene expression from livers of wild-type and Rev-erb\alpha/\beta knockout mice.
+LimoRhyde is a framework for differential analysis of rhythmic transcriptome data. Here, we go through the typical steps of an analysis: identifying rhythmic genes, identifying differentially rhythmic genes, and identifying differentially expressed genes. This example is based on a dataset of gene expression from livers of wild-type and Rev-erb\alpha/\beta knockout mice.
 
 ## Gathering Experimental Data
 
@@ -25,13 +25,16 @@ In this first stage, we will be gathering experimental data from the [GSE34018](
 library(annotate)
 library(limorhyde)
 library(GEOquery)
-library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(knitr)
 library(limma)
 library(rain)
 library(foreach)
 library(ggplot2)
 library(org.Mm.eg.db)
+
+source('get_gene_symbols.R')
 ```
 
 We need to define q-value thresholds for rhythmic and differentially rhythmic genes.
@@ -67,48 +70,7 @@ sm = bind_cols(sm, limorhyde(sm, 'time'))
 
 Applying the following optional steps allow us to use the gene symbol names in the subsequent plots.
 ```{r message=FALSE}
-getGeneProbeMappingAnno = function(featureDf, dbName, interName) {
-  mappingProbeIntermediate = featureDf[!is.na(featureDf[,interName]) & featureDf[,interName] != '', c('ID', interName)]
-  colnames(mappingProbeIntermediate) = c('probeSet', 'geneInter')
-
-  mapTmp1 = eval(parse(text = sprintf('%s.db::%s', substr(dbName, 1, 9), dbName)))
-  mapTmp2 = AnnotationDbi::mappedkeys(mapTmp1)
-  mapTmp3 = as.list(mapTmp1[mapTmp2])
-  geneId = do.call(c, mapTmp3)
-
-  geneInter = do.call(c, mapply(function(inter, len) rep_len(inter, len), names(mapTmp3), sapply(mapTmp3, length),
-                      SIMPLIFY = FALSE))
-  if (dbName == 'org.Hs.egUNIGENE2EG') {
-    geneInter = sub('Hs.', '', geneInter, fixed = TRUE)}
-  mappingIdInter = data.frame(geneId, geneInter, stringsAsFactors = FALSE)
-  return(merge(mappingIdInter, mappingProbeIntermediate, by = 'geneInter', sort = FALSE))}
-
-calcExprsByGene = function(eset, mapping) {
-  geneIds = unique(mapping[,'geneId'])
-  exprsByGene = matrix(nrow = length(geneIds), ncol = ncol(eset), dimnames = list(geneIds, Biobase::sampleNames(eset)))
-  for (geneId in geneIds) {
-    exprsTmp = Biobase::exprs(eset)[mapping[mapping[,'geneId'] == geneId, 'probeSet'], , drop = FALSE]
-    if (nrow(exprsTmp) == 1) {
-      exprsByGene[geneId,] = exprsTmp
-    } else {
-      exprsByGene[geneId,] = matrixStats::rowMedians(t(exprsTmp), na.rm = TRUE)}}
-  return(exprsByGene)}
-
-fixGeoSampleNames = function(sampleNames) {
-  sampleNames = paste0(toupper(sampleNames), '_')
-  regexResult = regexpr('^GSM[0-9]+[^0-9]', sampleNames)
-  sampleNamesNew = mapply(function(sampleName, matchLength) substr(sampleName, 1, matchLength - 1), sampleNames,
-                  attr(regexResult, 'match.length'))
-  return(unname(sampleNamesNew))}
-```
-
-```{r message=FALSE}
-featureDf = pData(featureData(gse$GSE34018_series_matrix.txt.gz))
-idx = sapply(featureDf, is.factor)
-featureDf[idx] = lapply(featureDf[idx], as.character)
-
-featureDf[,'RefSeq'] = sapply(featureDf[,'GB_ACC'], function(x) strsplit(x, split = '.', fixed = TRUE)[[1]][1])
-mapping = getGeneProbeMappingAnno(featureDf, dbName = 'org.Mm.egREFSEQ2EG', interName = 'RefSeq')
+mapping = getGeneMapping(featureData(gse$GSE34018_series_matrix.txt.gz))
 ```
 
 Now, we populate the expression set and expression matrix for our dataset.
