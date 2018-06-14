@@ -1,6 +1,6 @@
 Package: limorhyde
 Title: Differential analysis of rhythmic transcriptome data
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: person("Jake", "Hughey", email = "jakejhughey@gmail.com", role = c("aut", "cre"))
 Description: A flexible approach, inspired by cosinor regression, to enable
     differential analysis of rhythmic transcriptome data.
