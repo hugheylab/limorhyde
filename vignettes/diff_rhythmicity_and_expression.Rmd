@@ -29,7 +29,7 @@ library(rain)
 library(ggplot2)
 library(org.Mm.eg.db)
 
-source(system.file("extdata", "vignette_functions.R", package = "limorhyde"))
+source(system.file('extdata', 'vignette_functions.R', package = 'limorhyde'))
 ```
 
 Here we specify the zeitgeber period and the q-value cutoffs for rhythmic and differentially rhythmic genes.
@@ -75,8 +75,7 @@ emat = log2(calcExprsByGene(gse$GSE34018_series_matrix.txt.gz, mapping))[,sm$sam
 
 The dataset has a manageable number of unique time-points, so this step uses [RAIN](https://doi.org/doi:10.18129/B9.bioc.rain). We calculate the q-value of rhythmicity for each gene using that gene's p-values for each condition and adjusting for multiple testing.
 ```{r, message = FALSE}
-rhyRain = rainWrapper(sm, emat, period) 
-rownames(rhyRain) = NULL
+rhyRain = rainWrapper(sm, emat, period)
 
 rhyGenes = rhyRain %>%
   group_by(geneId) %>%
