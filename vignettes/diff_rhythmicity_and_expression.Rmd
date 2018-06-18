@@ -18,7 +18,6 @@ LimoRhyde is a framework for differential analysis of rhythmic transcriptome dat
 ## Load packages and set parameters
 
 ```{r, message = FALSE}
-# TODO: make sure the Suggests section of the DESCRIPTION file is up-to-date
 library(annotate)
 library(limorhyde)
 library(GEOquery)
@@ -27,11 +26,10 @@ library(tidyr)
 library(knitr)
 library(limma)
 library(rain)
-library(foreach)
 library(ggplot2)
 library(org.Mm.eg.db)
 
-source('get_gene_symbols.R') # TODO: this is fragile, see http://r-pkgs.had.co.nz/data.html#data-extdata for a better way
+source(system.file("extdata", "vignette_functions.R", package = "limorhyde"))
 ```
 
 Here we specify the zeitgeber period and the q-value cutoffs for rhythmic and differentially rhythmic genes.
@@ -77,28 +75,7 @@ emat = log2(calcExprsByGene(gse$GSE34018_series_matrix.txt.gz, mapping))[,sm$sam
 
 The dataset has a manageable number of unique time-points, so this step uses [RAIN](https://doi.org/doi:10.18129/B9.bioc.rain). We calculate the q-value of rhythmicity for each gene using that gene's p-values for each condition and adjusting for multiple testing.
 ```{r, message = FALSE}
-# TODO: I'd prefer to put the code to make rhyRain into a function and move the function to the script currently called get_gene_symbols.R (the script should probably be renamed to something like vignette_functions.R)
-# rhyRain = rainWrapper(sm, emat, 'cond')
-
-smGroups = distinct(sm, cond) # inside the function, it may be easier to use unique instead of distinct
-rhyRain = foreach(ii = 1:nrow(smGroups), .combine = rbind) %do% {
-  smNow = sm %>%
-    filter(cond == smGroups[ii,]$cond)
-  tt = smNow$time
-  ematNow = emat[,smNow$sample]
-  
-  r = rle(sort(tt))
-  deltat = min(diff(unique(tt)))
-  
-  msrSeq = tibble(tt = seq(min(tt), max(tt), deltat)) %>%
-    full_join(tibble(tt = r$values, n = r$lengths), by = 'tt') %>%
-    mutate(n = ifelse(is.na(n), 0, n))
-  
-  result = rain(t(ematNow), deltat = deltat, period = period, measure.sequence = msrSeq$n)
-  result$geneId = rownames(ematNow)
-  result = cbind(result, smGroups[ii,])
-  return(result)
-}
+rhyRain = rainWrapper(sm, emat, period) 
 rownames(rhyRain) = NULL
 
 rhyGenes = rhyRain %>%
@@ -173,7 +150,7 @@ df = df %>%
   mutate(geneSymbol = factor(geneSymbol, levels = geneSymbolsNow))
 
 ggplot(df) +
-  facet_grid(geneSymbol ~ cond, scales='free_y') +
+  facet_grid(geneSymbol ~ cond, scales = 'free_y') +
   geom_point(aes(x = time, y = expr, shape = cond, color = geneSymbol), size = 2) +
   labs(x = 'Zeitgeber time (h)', y = 'Expression (norm.)') +
   scale_shape(solid = FALSE, guide = FALSE) +

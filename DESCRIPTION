@@ -11,13 +11,9 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
-Suggests:
-  annotate,
-  GEOquery,
-  dplyr,
-  knitr,
-  limma,
-  rain,
-  foreach,
-  ggplot2,
-  org.Mm.eg.db
+Suggests: annotate, GEOquery, dplyr, tidyr, knitr, limma, rain,
+        foreach, ggplot2, org.Mm.eg.db
+NeedsCompilation: no
+Packaged: 2018-06-18 14:50:26 UTC; jordan
+Author: Jake Hughey [aut, cre]
+Maintainer: Jake Hughey <jakejhughey@gmail.com>
