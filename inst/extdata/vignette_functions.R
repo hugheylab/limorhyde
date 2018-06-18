@@ -1,5 +1,6 @@
 library(foreach)
 
+
 getGeneProbeMappingAnno = function(featureDf, dbName, interName) {
   mappingProbeIntermediate = featureDf[!is.na(featureDf[[interName]]) & featureDf[[interName]] != '',
                                        c('ID', interName)]
@@ -45,6 +46,7 @@ getGeneMapping = function(eset){
   featureDf[idx] = lapply(featureDf[idx], as.character)
   featureDf$RefSeq = sapply(featureDf$GB_ACC, function(x) strsplit(x, split = '.', fixed = TRUE)[[1]][1])
   return(getGeneProbeMappingAnno(featureDf, dbName = 'org.Mm.egREFSEQ2EG', interName = 'RefSeq'))}
+
 
 rainWrapper = function(sm, emat, period) {
   smGroups = distinct(sm, cond) # inside the function, it may be easier to use unique instead of distinct
