@@ -7,14 +7,14 @@ For details about the method and to see how we used it to analyze circadian tran
 ```R
 install.packages('drat')
 drat::addRepo('hugheylab')
-install.packages('limorhyde', type='source')
+install.packages('limorhyde', type = 'source')
 ```
 You can update the package with `drat::addRepo('hugheylab')`, then `update.packages()`.
 
 ## Install using devtools
 ```R
 install.packages('devtools')
-devtools::install_github('hugheylab/limorhyde')
+devtools::install_github('hugheylab/limorhyde', build_vignettes = TRUE)
 ```
 You can update the package using just the second line.
 
