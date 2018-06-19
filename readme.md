@@ -25,9 +25,9 @@ docker pull hugheylab/hugheyverse
 ```
 
 ## Getting started
-See the documentation for the one function and the vignette:
+See the documentation and the vignette:
 ```R
 library('limorhyde')
 ?limorhyde
-vignette(package = 'limorhyde')
+vignette('introduction', package = 'limorhyde')
 ```
