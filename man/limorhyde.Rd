@@ -9,38 +9,43 @@ limorhyde(df, timeColname, period = 24, sinusoid = TRUE, nKnots = 3)
 \arguments{
 \item{df}{Data frame containing one row for each sample.}
 
-\item{timeColname}{Character string indicating the column in \code{df} that contains the time
-at which each sample was acquired.}
+\item{timeColname}{Character string indicating the column in \code{df} that
+contains the time at which each sample was acquired.}
 
-\item{period}{Number corresponding to the period to use for the decomposition
-(in units of the values in \code{timeColname}).}
+\item{period}{Number corresponding to the period to use for the
+decomposition (in units of the values in \code{timeColname}).}
 
-\item{sinusoid}{If \code{TRUE}, the decomposition is based on sine and cosine curves. If \code{FALSE},
-the decomposition is based on a periodic smoothing spline.}
+\item{sinusoid}{If \code{TRUE}, the decomposition is based on sine and cosine
+curves. If \code{FALSE}, the decomposition is based on a periodic smoothing
+spline.}
 
-\item{nKnots}{Number of knots for the periodic spline. Only used if \code{sinusoid} is \code{FALSE}.}
+\item{nKnots}{Number of knots for the periodic spline. Only used if
+\code{sinusoid} is \code{FALSE}.}
 }
 \value{
-A data frame with a row for each sample and a column for each component of the time decomposition.
+A data frame with a row for each sample and a column for each
+component of the time decomposition.
 }
 \description{
-\code{limorhyde} decomposes a periodic time variable into multiple components based on either
-the first harmonic of a Fourier series or on a periodic smoothing spline.
+\code{limorhyde} decomposes a periodic time variable into multiple components
+based on either the first harmonic of a Fourier series or on a periodic
+smoothing spline.
 }
 \examples{
 # create an example data frame
 nSamples = 12
-df = data.frame(
+d = data.frame(
   sample = paste0('sample_', 1:nSamples),
-  genotype = factor(rep(c('WT', 'KO'), each=nSamples/2), levels=c('WT', 'KO')),
-  zt = rep(seq(0, 24-24/nSamples*2, 24/nSamples*2), times=2),
-  stringsAsFactors=FALSE)
+  genotype = factor(rep(c('WT', 'KO'), each = nSamples / 2),
+                    levels = c('WT', 'KO')),
+  zt = rep(seq(0, 24 - 24 / nSamples * 2, 24 / nSamples * 2), times = 2),
+  stringsAsFactors = FALSE)
 
 # call limorhyde
-limo = limorhyde(df, 'zt')
+limo = limorhyde(d, 'zt')
 colnames(limo)
-df = cbind(df, limo)
+d = cbind(d, limo)
 
 # create a design matrix that could be used with methods such as limma
-design = model.matrix(~ genotype * (zt_cos + zt_sin), data=df)
+design = model.matrix(~ genotype * (zt_cos + zt_sin), data = d)
 }
