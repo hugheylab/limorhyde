@@ -21,8 +21,7 @@
 #' @example R/limorhyde_example.R
 #'
 #' @export
-limorhyde = function(df, timeColname, period = 24, sinusoid = TRUE,
-                     nKnots = 3) {
+limorhyde = function(df, timeColname, period = 24, sinusoid = TRUE, nKnots = 3) {
   if (!(timeColname %in% colnames(df))) {
     stop('timeColname must be a named column in df.')}
 
@@ -32,8 +31,10 @@ limorhyde = function(df, timeColname, period = 24, sinusoid = TRUE,
     colnames(d) = paste0(timeColname, c('_cos', '_sin'))
   } else {
     knots = seq(0, period - period / nKnots, length = nKnots)
-    d = bigsplines::ssBasis(df[[timeColname]] %% period, knots = knots,
-                            xmin = 0, xmax = period, periodic = TRUE)$X
+    # d = bigsplines::ssBasis(df[[timeColname]] %% period, knots = knots,
+    #                         xmin = 0, xmax = period, periodic = TRUE)$X
+    d = pbs::pbs(df[[timeColname]] %% period, knots = knots,
+                 Boundary.knots = c(0, period))[, , drop = FALSE]
     d = as.data.frame(d)
     colnames(d) = paste0(timeColname, '_knot', 1:nKnots)}
 
