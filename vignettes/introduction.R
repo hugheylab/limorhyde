@@ -1,5 +1,5 @@
 ## ---- echo = FALSE-------------------------------------------------------
-knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
+knitr::opts_chunk$set(collapse = TRUE, comment = '#>', fig.retina = 2)
 
 ## ---- message = FALSE----------------------------------------------------
 library(annotate)
@@ -33,14 +33,14 @@ sm = as_tibble(pData(phenoData(eset))) %>%
                           c('wild-type', 'knockout'))) %>%
   arrange(cond, time)
 
-kable(sm[1:5,])
+kable(sm[1:5, ])
 
 ## ------------------------------------------------------------------------
-sm = bind_cols(sm, limorhyde(sm, 'time', period))
+sm = bind_cols(sm, as.data.frame(limorhyde(sm$time, 'time_')))
 
 ## ----message = FALSE-----------------------------------------------------
 mapping = getGeneMapping(featureData(eset))
-emat = log2(calcExprsByGene(eset, mapping))[,sm$sample]
+emat = log2(calcExprsByGene(eset, mapping))[, sm$sample]
 
 ## ---- message = FALSE----------------------------------------------------
 rhyRain = rainWrapper(sm, emat, period)
@@ -52,13 +52,13 @@ rhyGenes = rhyRain %>%
   mutate(qval = p.adjust(pVal, method = 'BH')) %>%
   arrange(qval)
 
-kable(rhyGenes[1:5,])
+kable(rhyGenes[1:5, ])
 
 ## ---- message = FALSE----------------------------------------------------
 design = model.matrix(~ cond * (time_cos + time_sin), data = sm)
 
 fit = lmFit(emat, design)
-fit = eBayes(fit, trend=TRUE)
+fit = eBayes(fit, trend = TRUE)
 drLimma = topTable(fit, coef = 5:6, number = Inf)
 
 drLimma$geneId = rownames(drLimma)
@@ -66,7 +66,7 @@ rownames(drLimma) = NULL
 drLimma = semi_join(drLimma, filter(rhyGenes, qval <= qvalRhyCutoff), by = 'geneId')
 drLimma$adj.P.Val = p.adjust(drLimma$P.Value, method = 'BH')
 
-kable(drLimma[1:5,])
+kable(drLimma[1:5, ])
 
 ## ---- message = FALSE----------------------------------------------------
 design = model.matrix(~ cond + time_cos + time_sin, data = sm)
@@ -80,7 +80,7 @@ rownames(deLimma) = NULL
 deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val <= qvalDrCutoff), by = 'geneId')
 deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')
 
-kable(deLimma[1:5,])
+kable(deLimma[1:5, ])
 
 ## ----fig.width = 4, fig.height = 3, message = FALSE----------------------
 ggplot(data = deLimma) +
@@ -91,9 +91,9 @@ ggplot(data = deLimma) +
 geneIdsNow = c(rhyGenes$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
 geneSymbolsNow = unname(getSYMBOL(geneIdsNow, 'org.Mm.eg.db'))
 
-df = as_tibble(t(emat[geneIdsNow,]))
+df = as_tibble(t(emat[geneIdsNow, ]))
 colnames(df) = geneSymbolsNow
-df$sample = colnames(emat[geneIdsNow,])
+df$sample = colnames(emat[geneIdsNow, ])
 df = df %>%
   inner_join(sm, by = 'sample') %>%
   select(sample, cond, time, geneSymbolsNow) %>%

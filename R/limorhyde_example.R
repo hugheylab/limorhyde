@@ -8,8 +8,7 @@ d = data.frame(
   stringsAsFactors = FALSE)
 
 # call limorhyde
-limo = limorhyde(d, 'zt')
-colnames(limo)
+limo = limorhyde(d$zt, 'zt_')
 d = cbind(d, limo)
 
 # create a design matrix that could be used with methods such as limma

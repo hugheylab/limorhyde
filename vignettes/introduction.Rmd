@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
+knitr::opts_chunk$set(collapse = TRUE, comment = '#>', fig.retina = 2)
 ```
 
 LimoRhyde is a framework for differential analysis of rhythmic transcriptome data. This vignette goes through the typical steps of an analysis: identifying rhythmic genes, identifying differentially rhythmic genes, and identifying differentially expressed genes. The dataset is based on total RNA from livers of wild-type and Rev-erb$\alpha/\beta$ knockout mice, with gene expression measured by microarray ([GSE34018](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE34018)).
@@ -57,18 +57,18 @@ sm = as_tibble(pData(phenoData(eset))) %>%
                           c('wild-type', 'knockout'))) %>%
   arrange(cond, time)
 
-kable(sm[1:5,])
+kable(sm[1:5, ])
 ```
 
 Next we use `limorhyde` to calculate `time_cos` and `time_sin`, which are based on the first harmonic of a Fourier decomposition of the `time` column, and append them to the `sm` data frame.
 ```{r}
-sm = bind_cols(sm, limorhyde(sm, 'time', period))
+sm = bind_cols(sm, as.data.frame(limorhyde(sm$time, 'time_')))
 ```
 
 Finally, we calculate the log-transformed expression values in terms of Entrez Gene IDs.
 ```{r message = FALSE}
 mapping = getGeneMapping(featureData(eset))
-emat = log2(calcExprsByGene(eset, mapping))[,sm$sample]
+emat = log2(calcExprsByGene(eset, mapping))[, sm$sample]
 ```
 
 ## Identify rhythmic genes
@@ -84,7 +84,7 @@ rhyGenes = rhyRain %>%
   mutate(qval = p.adjust(pVal, method = 'BH')) %>%
   arrange(qval)
 
-kable(rhyGenes[1:5,])
+kable(rhyGenes[1:5, ])
 ```
 
 ## Identify differentially rhythmic genes
@@ -96,7 +96,7 @@ Differential rhythmicity is based on statistical interactions between `cond` and
 design = model.matrix(~ cond * (time_cos + time_sin), data = sm)
 
 fit = lmFit(emat, design)
-fit = eBayes(fit, trend=TRUE)
+fit = eBayes(fit, trend = TRUE)
 drLimma = topTable(fit, coef = 5:6, number = Inf)
 
 drLimma$geneId = rownames(drLimma)
@@ -104,7 +104,7 @@ rownames(drLimma) = NULL
 drLimma = semi_join(drLimma, filter(rhyGenes, qval <= qvalRhyCutoff), by = 'geneId')
 drLimma$adj.P.Val = p.adjust(drLimma$P.Value, method = 'BH')
 
-kable(drLimma[1:5,])
+kable(drLimma[1:5, ])
 ```
 
 ## Identify differentially expressed genes
@@ -122,7 +122,7 @@ rownames(deLimma) = NULL
 deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val <= qvalDrCutoff), by = 'geneId')
 deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')
 
-kable(deLimma[1:5,])
+kable(deLimma[1:5, ])
 ```
 
 ## Plot the results
@@ -139,9 +139,9 @@ Another is a plot of expression as a function of time and genotype for individua
 geneIdsNow = c(rhyGenes$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
 geneSymbolsNow = unname(getSYMBOL(geneIdsNow, 'org.Mm.eg.db'))
 
-df = as_tibble(t(emat[geneIdsNow,]))
+df = as_tibble(t(emat[geneIdsNow, ]))
 colnames(df) = geneSymbolsNow
-df$sample = colnames(emat[geneIdsNow,])
+df$sample = colnames(emat[geneIdsNow, ])
 df = df %>%
   inner_join(sm, by = 'sample') %>%
   select(sample, cond, time, geneSymbolsNow) %>%
