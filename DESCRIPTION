@@ -25,5 +25,6 @@ Suggests:
     limma (>= 3.36.1),
     org.Mm.eg.db (>= 3.6.0),
     rain (>= 1.14.0),
-    tidyr (>= 0.8.1)
+    tidyr (>= 0.8.1),
+    rmarkdown (>= 1.9)
 VignetteBuilder: knitr
