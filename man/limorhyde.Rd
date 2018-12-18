@@ -4,26 +4,29 @@
 \alias{limorhyde}
 \title{Convert a periodic time variable into components usable in linear models}
 \usage{
-limorhyde(df, timeColname, period = 24, sinusoid = TRUE, nKnots = 3)
+limorhyde(time, colnamePrefix = NULL, period = 24, sinusoid = TRUE,
+  nKnots = 3, intercept = FALSE)
 }
 \arguments{
-\item{df}{Data frame containing one row for each sample.}
+\item{time}{Numeric vector of times, e.g., at which samples were acquired.}
 
-\item{timeColname}{Character string indicating the column in \code{df} that
-contains the time at which each sample was acquired.}
+\item{colnamePrefix}{Character string with which to prefix the column names
+of the basis.}
 
 \item{period}{Number corresponding to the period to use for the
-decomposition (in units of the values in \code{timeColname}).}
+decomposition (in the same units as \code{time}).}
 
-\item{sinusoid}{If \code{TRUE}, the decomposition is based on sine and cosine
-curves. If \code{FALSE}, the decomposition is based on a periodic smoothing
-spline.}
+\item{sinusoid}{If \code{TRUE}, the decomposition is based on cosinor, i.e.,
+cosine and sine. If \code{FALSE}, the decomposition is based on a periodic
+smoothing spline from the \code{pbs} package.}
 
-\item{nKnots}{Number of knots for the periodic spline. Only used if
+\item{nKnots}{Number of internal knots for the periodic spline. Only used if
 \code{sinusoid} is \code{FALSE}.}
+
+\item{intercept}{If \code{TRUE}, a column of ones will be included in the basis.}
 }
 \value{
-A data frame with a row for each sample and a column for each
+A matrix with a row for each sample and a column for each
 component of the time decomposition.
 }
 \description{
@@ -42,8 +45,7 @@ d = data.frame(
   stringsAsFactors = FALSE)
 
 # call limorhyde
-limo = limorhyde(d, 'zt')
-colnames(limo)
+limo = limorhyde(d$zt, 'zt_')
 d = cbind(d, limo)
 
 # create a design matrix that could be used with methods such as limma
