@@ -1,7 +1,7 @@
 # limorhyde
 `limorhyde` (linear models for rhythmicity, design) is an R package that enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
 
-For details about the method and to see how we used it to analyze circadian transcriptome data from various experimental designs, check out the [preprint](https://doi.org/10.1101/283622) and the [accompanying results](https://figshare.com/s/31dcb1346ef7f4268aa6).
+For details about the method and to see how we used it to analyze circadian transcriptome data from various experimental designs, check out the [paper](https://doi.org/10.1177/0748730418813785) and the [accompanying results](https://doi.org/10.6084/m9.figshare.5945569).
 
 ## Installation
 First install drat.
@@ -27,9 +27,8 @@ docker pull hugheylab/hugheyverse
 ```
 
 ## Getting started
-See the documentation and the vignette.
+See the vignette and the documentation.
 ```R
-library('limorhyde')
-?limorhyde
-vignette('introduction', package = 'limorhyde')
+browseVignettes('limorhyde')
+?limorhyde::limorhyde
 ```
