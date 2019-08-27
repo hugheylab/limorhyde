@@ -4,14 +4,18 @@
 For details about the method and to see how we used it to analyze circadian transcriptome data from various experimental designs, check out the [paper](https://doi.org/10.1177/0748730418813785) and the [accompanying results](https://doi.org/10.6084/m9.figshare.5945569).
 
 ## Installation
-First install drat.
-```R
-install.packages('drat')
-```
+First add the hugheylab repository to your repos. There are multiple ways to do this.
 
-Then add the following line to your `.Rprofile` file (located at "~/.Rprofile"), which gets run every time R starts. See [here](https://csgillespie.github.io/efficientR/3-3-r-startup.html#r-startup) for details.
+If you use RStudio, go to Tools -> Global Options... -> Packages -> Add... (under Secondary repositories), then enter the following values.
+
+- Name: hugheylab
+- Url: https://hugheylab.github.io/drat/
+
+You only have to do this once.
+
+Alternatively, you can enter the following command each time you want to install or update the package.
 ```R
-drat::addRepo('hugheylab')
+options(repos = c(getOption('repos'), 'https://hugheylab.github.io/drat/'))
 ```
 
 Now you can install the package.
