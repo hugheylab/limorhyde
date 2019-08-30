@@ -72,9 +72,9 @@ getCosinorBasis = function(x, period, intercept) {
 #'
 #' @export
 getSplineBasis = function(x, period, nKnots, intercept) {
-  knots = seq(0, period - period / nKnots, length = nKnots)
-  b = pbs::pbs(x %% period, knots = knots,
-               Boundary.knots = c(0, period))[, , drop = FALSE]
+  knots = seq(0, period, length = nKnots + 2)
+  b = pbs::pbs((x - min(x)) %% period, knots = knots[-c(1, length(knots))],
+               Boundary.knots = knots[c(1, length(knots))])[, , drop = FALSE]
   colnames(b) = paste0('knot', 1:nKnots)
   b = addIntercept(b, intercept)
   return(b)}
