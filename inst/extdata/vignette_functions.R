@@ -1,4 +1,4 @@
-library(foreach)
+library('foreach')
 
 
 getGeneProbeMappingAnno = function(featureDf, dbName, interName) {
@@ -46,26 +46,3 @@ getGeneMapping = function(eset){
   featureDf[idx] = lapply(featureDf[idx], as.character)
   featureDf$RefSeq = sapply(featureDf$GB_ACC, function(x) strsplit(x, split = '.', fixed = TRUE)[[1]][1])
   return(getGeneProbeMappingAnno(featureDf, dbName = 'org.Mm.egREFSEQ2EG', interName = 'RefSeq'))}
-
-
-rainWrapper = function(sm, emat, period) {
-  smGroups = distinct(sm, cond) # inside the function, it may be easier to use unique instead of distinct
-  rhyRain = foreach(ii = 1:nrow(smGroups), .combine = rbind) %do% {
-    smNow = sm %>%
-      filter(cond == smGroups[ii,]$cond)
-    tt = smNow$time
-    ematNow = emat[,smNow$sample]
-
-    r = rle(sort(tt))
-    deltat = min(diff(unique(tt)))
-
-    msrSeq = tibble(tt = seq(min(tt), max(tt), deltat)) %>%
-      full_join(tibble(tt = r$values, n = r$lengths), by = 'tt') %>%
-      mutate(n = ifelse(is.na(n), 0, n))
-
-    result = rain(t(ematNow), deltat = deltat, period = period, measure.sequence = msrSeq$n)
-    result$geneId = rownames(ematNow)
-    result = cbind(result, smGroups[ii,])
-    return(result)}
-  rownames(rhyRain) = NULL
-  return(rhyRain)}

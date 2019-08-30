@@ -1,6 +1,6 @@
 ---
 title: "Analyzing circadian transcriptome data with LimoRhyde"
-author: "Jordan Singer"
+author: "Jordan Singer and Jake Hughey"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -18,16 +18,15 @@ LimoRhyde is a framework for differential analysis of rhythmic transcriptome dat
 ## Load packages and set parameters
 
 ```{r, message = FALSE}
-library(annotate)
-library(limorhyde)
-library(GEOquery)
-library(dplyr)
-library(tidyr)
-library(knitr)
-library(limma)
-library(rain)
-library(ggplot2)
-library(org.Mm.eg.db)
+library('annotate')
+library('data.table')
+library('foreach')
+library('GEOquery')
+library('ggplot2')
+library('knitr')
+library('limma')
+library('limorhyde')
+library('org.Mm.eg.db')
 
 source(system.file('extdata', 'vignette_functions.R', package = 'limorhyde'))
 ```
@@ -46,23 +45,21 @@ For simplicity, we use the GEOquery package to load the processed data previousl
 eset = getGEO(filename = system.file('extdata', 'GSE34018_series_matrix.txt', package = 'limorhyde'))
 ```
 
-Now we construct the data frame of sample metadata.
+Now we construct the data.table of sample metadata.
 ```{r, message = FALSE}
-sm = as_tibble(pData(phenoData(eset))) %>%
-  transmute(title = title,
-            sample = geo_accession,
-            genotype = `genotype/variation:ch1`,
-            time = as.numeric(sub("_.*", "", sub(".*_ZT", "", title))),
-            cond = factor(genotype, c('wild-type', 'Reverb alpha/beta DKO'),
-                          c('wild-type', 'knockout'))) %>%
-  arrange(cond, time)
+sm = data.table(pData(phenoData(eset)))
+sm = sm[, .(title, sample = geo_accession, genotype = `genotype/variation:ch1`)]
+sm[, time := as.numeric(sub('_.*', '', sub('.*_ZT', '', title)))]
+sm[, cond := factor(genotype, c('wild-type', 'Reverb alpha/beta DKO'),
+                    c('wild-type', 'knockout'))]
+setorderv(sm, c('cond', 'time'))
 
 kable(sm[1:5, ])
 ```
 
-Next we use `limorhyde` to calculate `time_cos` and `time_sin`, which are based on the first harmonic of a Fourier decomposition of the `time` column, and append them to the `sm` data frame.
+Next we use `limorhyde` to calculate `time_cos` and `time_sin`, which are based on the first harmonic of a Fourier decomposition of the `time` column, and append them to the `sm` data.table.
 ```{r}
-sm = bind_cols(sm, as.data.frame(limorhyde(sm$time, 'time_')))
+sm = cbind(sm, limorhyde(sm$time, 'time_'))
 ```
 
 Finally, we calculate the log-transformed expression values in terms of Entrez Gene IDs.
@@ -73,23 +70,25 @@ emat = log2(calcExprsByGene(eset, mapping))[, sm$sample]
 
 ## Identify rhythmic genes
 
-The dataset has a manageable number of unique time-points, so this step uses [RAIN](https://doi.org/doi:10.18129/B9.bioc.rain). We calculate the q-value of rhythmicity for each gene using that gene's p-values for each condition and adjusting for multiple testing.
+The next three steps use [limma](https://doi.org/doi:10.18129/B9.bioc.limma). We calculate the q-value of rhythmicity for each gene using that gene's p-value for each condition and adjusting for multiple testing.
 ```{r, message = FALSE}
-rhyRain = rainWrapper(sm, emat, period)
+rhyLimma = foreach(condNow = unique(sm$cond), .combine = rbind) %do% {
+  design = model.matrix(~ time_cos + time_sin, data = sm[cond == condNow])
+  fit = lmFit(emat[, sm$cond == condNow], design)
+  fit = eBayes(fit, trend = TRUE)
+  rhyNow = data.table(topTable(fit, coef = 2:3, number = Inf), keep.rownames = TRUE)
+  setnames(rhyNow, 'rn', 'geneId')
+  rhyNow[, cond := condNow]
+}
 
-rhyGenes = rhyRain %>%
-  group_by(geneId) %>%
-  summarize(pVal = min(pVal)) %>%
-  group_by() %>%
-  mutate(qval = p.adjust(pVal, method = 'BH')) %>%
-  arrange(qval)
+rhyLimmaSummary = rhyLimma[, .(P.Value = min(P.Value)), by = geneId]
+rhyLimmaSummary[, adj.P.Val := p.adjust(P.Value, method = 'BH')]
+setorderv(rhyLimmaSummary, 'adj.P.Val')
 
-kable(rhyGenes[1:5, ])
+kable(rhyLimmaSummary[1:5, ])
 ```
 
 ## Identify differentially rhythmic genes
-
-The next two steps use [limma](https://doi.org/doi:10.18129/B9.bioc.limma).
 
 Differential rhythmicity is based on statistical interactions between `cond` and the `time` components. We pass all genes to limma (whose Empirical Bayes does best with many genes), but keep results only for rhythmic genes, and adjust for multiple testing accordingly.
 ```{r, message = FALSE}
@@ -97,12 +96,12 @@ design = model.matrix(~ cond * (time_cos + time_sin), data = sm)
 
 fit = lmFit(emat, design)
 fit = eBayes(fit, trend = TRUE)
-drLimma = topTable(fit, coef = 5:6, number = Inf)
+drLimma = data.table(topTable(fit, coef = 5:6, number = Inf), keep.rownames = TRUE)
+setnames(drLimma, 'rn', 'geneId')
 
-drLimma$geneId = rownames(drLimma)
-rownames(drLimma) = NULL
-drLimma = semi_join(drLimma, filter(rhyGenes, qval <= qvalRhyCutoff), by = 'geneId')
-drLimma$adj.P.Val = p.adjust(drLimma$P.Value, method = 'BH')
+drLimma = drLimma[geneId %in% rhyLimmaSummary[adj.P.Val <= qvalRhyCutoff]$geneId]
+drLimma[, adj.P.Val := p.adjust(P.Value, method = 'BH')]
+setorderv(drLimma, 'adj.P.Val')
 
 kable(drLimma[1:5, ])
 ```
@@ -115,12 +114,17 @@ design = model.matrix(~ cond + time_cos + time_sin, data = sm)
 
 fit = lmFit(emat, design)
 fit = eBayes(fit, trend = TRUE)
-deLimma = topTable(fit, coef = 2, number = Inf)
+deLimma = data.table(topTable(fit, coef = 2, number = Inf), keep.rownames = TRUE)
+setnames(deLimma, 'rn', 'geneId')
 
-deLimma$geneId = rownames(deLimma)
-rownames(deLimma) = NULL
-deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val <= qvalDrCutoff), by = 'geneId')
-deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')
+deLimma = deLimma[!(geneId %in% drLimma[adj.P.Val <= qvalDrCutoff]$geneId)]
+deLimma[, adj.P.Val := p.adjust(P.Value, method = 'BH')]
+setorderv(deLimma, 'adj.P.Val')
+
+# deLimma$geneId = rownames(deLimma)
+# rownames(deLimma) = NULL
+# deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val <= qvalDrCutoff), by = 'geneId')
+# deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')
 
 kable(deLimma[1:5, ])
 ```
@@ -129,24 +133,24 @@ kable(deLimma[1:5, ])
 
 Numerous plots are possible. One is a volcano plot of differentially expressed genes.
 ```{r fig.width = 4, fig.height = 3, message = FALSE}
-ggplot(data = deLimma) +
+ggplot(deLimma) +
   geom_point(aes(x = logFC, y = -log10(adj.P.Val)), size = 0.2, alpha = 0.5) +
   labs(x = expression(log[2]*' fold-change'), y = expression(-log[10]*' '*q[DE]))
 ```
 
 Another is a plot of expression as a function of time and genotype for individual genes. Here we show, from top to bottom, the top rhythmic gene, top differentially rhythmic gene, and top differentially expressed gene by q-value.
 ```{r fig.width = 5, fig.height = 4, message = FALSE}
-geneIdsNow = c(rhyGenes$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
+geneIdsNow = c(rhyLimmaSummary$geneId[1], drLimma$geneId[1], deLimma$geneId[1])
 geneSymbolsNow = unname(getSYMBOL(geneIdsNow, 'org.Mm.eg.db'))
 
-df = as_tibble(t(emat[geneIdsNow, ]))
-colnames(df) = geneSymbolsNow
-df$sample = colnames(emat[geneIdsNow, ])
-df = df %>%
-  inner_join(sm, by = 'sample') %>%
-  select(sample, cond, time, geneSymbolsNow) %>%
-  gather(key = 'geneSymbol', value = 'expr', geneSymbolsNow) %>%
-  mutate(geneSymbol = factor(geneSymbol, levels = geneSymbolsNow))
+df = data.table(t(emat[geneIdsNow, ]))
+setnames(df, geneSymbolsNow)
+df[, sample := colnames(emat[geneIdsNow, ])]
+
+df = merge(df, sm[, .(sample, cond, time)], by = 'sample')
+df = melt(df, measure.vars = geneSymbolsNow, variable.name = 'geneSymbol',
+          value.name = 'expr')
+levels(df$geneSymbol) = geneSymbolsNow
 
 ggplot(df) +
   facet_grid(geneSymbol ~ cond, scales = 'free_y') +
@@ -154,5 +158,5 @@ ggplot(df) +
   labs(x = 'Zeitgeber time (h)', y = 'Expression (norm.)') +
   scale_shape(solid = FALSE, guide = FALSE) +
   scale_color_brewer(type = 'qual', palette = 'Dark2', guide = FALSE) +
-  scale_x_continuous(limits = c(0, 24), breaks = seq(0, 24, 6))
+  scale_x_continuous(limits = c(0, 24), breaks = seq(0, 24, 4))
 ```
