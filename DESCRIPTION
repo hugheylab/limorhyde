@@ -26,3 +26,4 @@ Suggests:
     org.Mm.eg.db (>= 3.6.0),
     rmarkdown (>= 1.9)
 VignetteBuilder: knitr
+BugReports: https://github.com/hugheylab/limorhyde/issues
