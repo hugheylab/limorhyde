@@ -1,6 +1,5 @@
 ---
 title: "Analyzing circadian transcriptome data with LimoRhyde"
-author: "Jordan Singer and Jake Hughey"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -63,7 +62,7 @@ sm = cbind(sm, limorhyde(sm$time, 'time_'))
 ```
 
 Finally, we calculate the log-transformed expression values in terms of Entrez Gene IDs.
-```{r message = FALSE}
+```{r, message = FALSE}
 mapping = getGeneMapping(featureData(eset))
 emat = log2(calcExprsByGene(eset, mapping))[, sm$sample]
 ```
@@ -120,11 +119,6 @@ setnames(deLimma, 'rn', 'geneId')
 deLimma = deLimma[!(geneId %in% drLimma[adj.P.Val <= qvalDrCutoff]$geneId)]
 deLimma[, adj.P.Val := p.adjust(P.Value, method = 'BH')]
 setorderv(deLimma, 'adj.P.Val')
-
-# deLimma$geneId = rownames(deLimma)
-# rownames(deLimma) = NULL
-# deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val <= qvalDrCutoff), by = 'geneId')
-# deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')
 
 kable(deLimma[1:5, ])
 ```
