@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">limorhyde</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
       </span>
     </div>
 
@@ -42,9 +42,6 @@
     <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
-</li>
-<li>
-  <a href="../articles/limorhyde.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -86,9 +83,8 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Analyzing circadian transcriptome data with LimoRhyde</h1>
-                        <h4 class="author">Jordan Singer and Jake Hughey</h4>
             
-            <h4 class="date">2020-05-01</h4>
+            <h4 class="date">2020-05-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/hugheylab/limorhyde/blob/master/vignettes/introduction.Rmd"><code>vignettes/introduction.Rmd</code></a></small>
       <div class="hidden name"><code>introduction.Rmd</code></div>
@@ -325,11 +321,6 @@
 <span class="no">deLimma</span> <span class="kw">=</span> <span class="no">deLimma</span>[!(<span class="no">geneId</span> <span class="kw">%in%</span> <span class="no">drLimma</span>[<span class="no">adj.P.Val</span> <span class="kw">&lt;=</span> <span class="no">qvalDrCutoff</span>]$<span class="no">geneId</span>)]
 <span class="no">deLimma</span>[, <span class="no">adj.P.Val</span> <span class="kw">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html">p.adjust</a></span>(<span class="no">P.Value</span>, <span class="kw">method</span> <span class="kw">=</span> <span class="st">'BH'</span>)]
 <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setorder.html">setorderv</a></span>(<span class="no">deLimma</span>, <span class="st">'adj.P.Val'</span>)
-
-<span class="co"># deLimma$geneId = rownames(deLimma)</span>
-<span class="co"># rownames(deLimma) = NULL</span>
-<span class="co"># deLimma = anti_join(deLimma, filter(drLimma, adj.P.Val &lt;= qvalDrCutoff), by = 'geneId')</span>
-<span class="co"># deLimma$adj.P.Val = p.adjust(deLimma$P.Value, method = 'BH')</span>
 
 <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span>(<span class="no">deLimma</span>[<span class="fl">1</span>:<span class="fl">5</span>, ])</pre></body></html></div>
 <table class="table">

@@ -1,29 +1,29 @@
 Package: limorhyde
 Title: Differential analysis of rhythmic transcriptome data
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: as.person(c(
-    "Jake Hughey <jakejhughey@gmail.com> [aut, cre]", 
-    "Jordan Singer <jordan.m.singer@vumc.org> [ctb]"))
+  "Jake Hughey <jakejhughey@gmail.com> [aut, cre]", 
+  "Jordan Singer <jordan.m.singer@vumc.org> [ctb]"))
 Description: A flexible approach, inspired by cosinor regression, for
-    differential analysis of rhythmic transcriptome data.
+  differential analysis of rhythmic transcriptome data.
 Depends: R (>= 3.4)
 License: GPL-2
 URL: https://github.com/hugheylab/limorhyde
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Roxygen: list(markdown = TRUE)
 Imports:
-    pbs (>= 1.1)
+  pbs (>= 1.1)
 Suggests:
-    annotate (>= 1.58.0),
-    data.table (>= 1.12.2),
-    foreach (>= 1.4.4),
-    GEOquery (>= 2.48.0),
-    ggplot2 (>= 2.2.1),
-    knitr (>= 1.20),
-    limma (>= 3.36.1),
-    org.Mm.eg.db (>= 3.6.0),
-    rmarkdown (>= 1.9)
+  annotate (>= 1.58.0),
+  data.table (>= 1.12.2),
+  foreach (>= 1.4.4),
+  GEOquery (>= 2.48.0),
+  ggplot2 (>= 2.2.1),
+  knitr (>= 1.20),
+  limma (>= 3.36.1),
+  org.Mm.eg.db (>= 3.6.0),
+  rmarkdown (>= 1.9)
 VignetteBuilder: knitr
 BugReports: https://github.com/hugheylab/limorhyde/issues

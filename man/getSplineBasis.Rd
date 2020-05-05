@@ -20,7 +20,7 @@ A matrix with a row for each value of \code{x} and a column for each
 component of the decomposition.
 }
 \description{
-Generate basis matrix for a periodic B-spline using \link[pbs]{pbs}.
+Generate basis matrix for a periodic B-spline using \code{\link[pbs:pbs]{pbs::pbs()}}.
 }
 \examples{
 b = getSplineBasis(seq(0, 20, 4), period = 24, nKnots = 3, intercept = FALSE)

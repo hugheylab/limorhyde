@@ -4,8 +4,14 @@
 \alias{limorhyde}
 \title{Convert a periodic time variable into components usable in linear models}
 \usage{
-limorhyde(time, colnamePrefix = NULL, period = 24, sinusoid = TRUE,
-  nKnots = 3, intercept = FALSE)
+limorhyde(
+  time,
+  colnamePrefix = NULL,
+  period = 24,
+  sinusoid = TRUE,
+  nKnots = 3,
+  intercept = FALSE
+)
 }
 \arguments{
 \item{time}{Numeric vector of times, e.g., at which samples were acquired.}
@@ -30,9 +36,8 @@ A matrix with a row for each sample and a column for each
 component of the time decomposition.
 }
 \description{
-\code{limorhyde} decomposes a periodic time variable into multiple components
-based on either the first harmonic of a Fourier series or on a periodic
-smoothing spline.
+Decompose a periodic time variable into multiple components based on either
+the first harmonic of a Fourier series or on a periodic smoothing spline.
 }
 \examples{
 # create an example data frame

@@ -13,7 +13,7 @@ If you use RStudio, go to Tools -> Global Options... -> Packages -> Add... (unde
 
 You only have to do this once.
 
-Alternatively, you can enter the following command each time you want to install or update the package.
+Alternatively, enter the following command each time you want to install or update the package.
 ```R
 options(repos = c(getOption('repos'), 'https://hugheylab.github.io/drat/'))
 ```
@@ -24,13 +24,12 @@ install.packages('limorhyde', type = 'source')
 ```
 You can update the package using `update.packages()`.
 
-## Docker
-You can also use a pre-built [docker image](https://hub.docker.com/r/hugheylab/hugheyverse), which has all dependencies installed.
+There's also pre-built [docker image](https://hub.docker.com/r/hugheylab/hugheyverse), which has all dependencies installed.
 ```bash
 docker pull hugheylab/hugheyverse
 ```
 
-## Getting started
+## Usage
 See the vignette and the documentation.
 ```R
 browseVignettes('limorhyde')
