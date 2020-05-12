@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: rocker/tidyverse
+      - image: rocker/tidyverse:3.6.2
 
     working_directory: ~/repo
 
@@ -19,15 +19,14 @@ jobs:
               -e 'cat(sprintf("export PKG_VERSION=%s\n", dsc[,"Version"]))' \
               -e 'cat(sprintf("export PKG_NAME=%s\n", dsc[,"Package"]))' \
               >> ${BASH_ENV};
-              
+
       - run:
           name: Install devtools and dependencies
           command: |
-            Rscript \
-              -e 'setRepositories(ind = c(1:5))' \
-              -e 'if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")' \
-              -e 'devtools::install_deps(dependencies = TRUE)'
-              
+            Rscript -e 'devtools::install_dev_deps(dependencies = TRUE,
+                                                   repos = BiocManager::repositories(),
+                                                   upgrade = TRUE)'
+
       - run:
           name: Build package
           command: R CMD build .
