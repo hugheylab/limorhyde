@@ -23,6 +23,7 @@ Suggests:
   ggplot2 (>= 2.2.1),
   knitr (>= 1.20),
   limma (>= 3.36.1),
+  matrixStats (>= 0.56.0),
   org.Mm.eg.db (>= 3.6.0),
   rmarkdown (>= 1.9)
 VignetteBuilder: knitr

@@ -21,7 +21,7 @@ jobs:
               >> ${BASH_ENV};
 
       - run:
-          name: Install devtools and dependencies
+          name: Install dependencies
           command: |
             Rscript -e 'devtools::install_dev_deps(dependencies = TRUE,
                                                    repos = BiocManager::repositories(),
