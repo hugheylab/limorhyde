@@ -19,15 +19,15 @@ jobs:
               -e 'cat(sprintf("export PKG_VERSION=%s\n", dsc[,"Version"]))' \
               -e 'cat(sprintf("export PKG_NAME=%s\n", dsc[,"Package"]))' \
               >> ${BASH_ENV};
-
+              
       - run:
           name: Install devtools and dependencies
           command: |
             Rscript \
-              -e 'install.packages("devtools")' \
-              -e 'setRepositories(ind = c(1:5, 9))' \
+              -e 'setRepositories(ind = c(1:5))' \
+              -e 'if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")' \
               -e 'devtools::install_deps(dependencies = TRUE)'
-
+              
       - run:
           name: Build package
           command: R CMD build .
