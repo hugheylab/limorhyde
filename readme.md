@@ -1,5 +1,7 @@
 # limorhyde
 
+[![CircleCI](https://circleci.com/gh/hugheylab/limorhyde.svg?style=shield)](https://circleci.com/gh/hugheylab/limorhyde)
+
 `limorhyde` (linear models for rhythmicity, design) enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
 
 For details about the method and to see how we used it to analyze circadian transcriptome data from various experimental designs, check out the [paper](https://doi.org/10.1177/0748730418813785) and the [accompanying results](https://doi.org/10.6084/m9.figshare.5945569).
