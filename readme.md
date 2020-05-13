@@ -6,28 +6,28 @@ For details about the method and to see how we used it to analyze circadian tran
 
 ## Installation
 
-First add the hugheylab repository to your repos. There are multiple ways to do this.
-
-If you use RStudio, go to Tools -> Global Options... -> Packages -> Add... (under Secondary repositories), then enter the following values.
+If you use RStudio, go to Tools -> Global Options... -> Packages -> Add... (under Secondary repositories), then enter:
 
 - Name: hugheylab
 - Url: https://hugheylab.github.io/drat/
 
-You only have to do this once.
-
-Alternatively, enter the following command each time you want to install or update the package.
+You only have to do this once. Then you can install or update the package by entering:
 
 ```R
-options(repos = c(getOption('repos'), 'https://hugheylab.github.io/drat/'))
+if (!requireNamespace('BiocManager', quietly = TRUE))
+  install.packages('BiocManager')
+
+BiocManager::install('limorhyde')
 ```
 
-Now you can install the package.
+Alternatively, you can install or update the package by entering:
 
 ```R
-install.packages('limorhyde', type = 'source')
-```
+if (!requireNamespace('BiocManager', quietly = TRUE))
+  install.packages('BiocManager')
 
-You can update the package using `update.packages()`.
+BiocManager::install('limorhyde', site_repository = 'https://hugheylab.github.io/drat/')
+```
 
 There's also [docker image](https://hub.docker.com/r/hugheylab/hugheyverse), which has all dependencies installed.
 
