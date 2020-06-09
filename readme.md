@@ -40,4 +40,4 @@ docker pull hugheylab/hugheyverse
 
 ## Usage
 
-For an introduction to the package, read the [vignette](articles/introduction.html). For more details, check out the [reference documentation](reference/index.html).
+For an introduction to the package, read the [vignette](https://limorhyde.hugheylab.org/articles/introduction.html). For more details, check out the [reference documentation](https://limorhyde.hugheylab.org/reference/index.html).
