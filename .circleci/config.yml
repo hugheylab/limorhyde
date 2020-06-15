@@ -59,7 +59,7 @@ jobs:
 
               if test -f "$FILE"
               then
-                echo "Package tarball of current version exists on drat repo."
+                echo "Package tarball of same current version exists on drat repo."
                 mkdir ../tmpDir1
                 tar xvzf "../${PKG_TARBALL}" -C ../tmpDir1/
                 sed -i '/DESCRIPTION$/d' ../tmpDir1/${PKG_NAME}/MD5
