@@ -59,10 +59,11 @@ jobs:
 
               if test -f "$FILE"
               then
-                echo "Package tarball of same current version exists on drat repo."
+                echo "Package tarball of current version exists on drat repo."
                 mkdir ../tmpDir1
                 tar xvzf "../${PKG_TARBALL}" -C ../tmpDir1/
                 sed -i '/DESCRIPTION$/d' ../tmpDir1/${PKG_NAME}/MD5
+                sed -i '/build\/vignette\.rds$/d' ../tmpDir1/${PKG_NAME}/MD5
 
                 sed -i '/Packaged:/d' ../tmpDir1/${PKG_NAME}/DESCRIPTION
                 cd ../tmpDir1/
@@ -80,6 +81,7 @@ jobs:
                   echo "Found previous MD5 file."
 
                   sed -i '/DESCRIPTION$/d' ../tmpDir2/${PKG_NAME}/MD5
+                  sed -i '/build\/vignette\.rds$/d' ../tmpDir2/${PKG_NAME}/MD5
                   sed -i '/Packaged:/d' ../tmpDir2/${PKG_NAME}/DESCRIPTION
                   cd ../tmpDir2/
                   SHADESC2=$(sha256sum ${PKG_NAME}/DESCRIPTION)
