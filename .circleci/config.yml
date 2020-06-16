@@ -64,6 +64,7 @@ jobs:
                 tar xvzf "../${PKG_TARBALL}" -C ../tmpDir1/
                 sed -i '/DESCRIPTION$/d' ../tmpDir1/${PKG_NAME}/MD5
                 sed -i '/build\/vignette\.rds$/d' ../tmpDir1/${PKG_NAME}/MD5
+                sed -i '/inst\/doc\/introduction\.html$/d' ../tmpDir1/${PKG_NAME}/MD5
                 MD5FILECUR=$(cat ../tmpDir1/${PKG_NAME}/MD5)
 
                 echo "Current MD5: $MD5FILECUR"
@@ -85,6 +86,7 @@ jobs:
 
                   sed -i '/DESCRIPTION$/d' ../tmpDir2/${PKG_NAME}/MD5
                   sed -i '/build\/vignette\.rds$/d' ../tmpDir2/${PKG_NAME}/MD5
+                  sed -i '/inst\/doc\/introduction\.html$/d' ../tmpDir2/${PKG_NAME}/MD5
                   MD5FILEPREV=$(cat ../tmpDir2/${PKG_NAME}/MD5)
 
                   echo "Previous MD5: $MD5FILEPREV"
