@@ -55,4 +55,5 @@ d = cbind(d, limo)
 
 # create a design matrix that could be used with methods such as limma
 design = model.matrix(~ genotype * (zt_cos + zt_sin), data = d)
+
 }
