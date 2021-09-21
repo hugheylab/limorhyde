@@ -32,12 +32,6 @@ if (!requireNamespace('BiocManager', quietly = TRUE))
 BiocManager::install('limorhyde', site_repository = 'https://hugheylab.github.io/drat/')
 ```
 
-There's also [docker image](https://hub.docker.com/r/hugheylab/hugheyverse), which has all dependencies installed.
-
-```bash
-docker pull hugheylab/hugheyverse
-```
-
 ## Usage
 
 For an introduction to the package, read the [vignette](https://limorhyde.hugheylab.org/articles/introduction.html). For more details, check out the [reference documentation](https://limorhyde.hugheylab.org/reference/index.html).
