@@ -1,6 +1,6 @@
 # limorhyde
 
-[![CircleCI](https://circleci.com/gh/hugheylab/limorhyde.svg?style=shield)](https://circleci.com/gh/hugheylab/limorhyde)
+[![check-coverage-deploy](https://github.com/hugheylab/limorhyde/workflows/check-coverage-deploy/badge.svg)](https://github.com/hugheylab/limorhyde/actions)
 [![codecov](https://codecov.io/gh/hugheylab/limorhyde/branch/master/graph/badge.svg)](https://codecov.io/gh/hugheylab/limorhyde)
 
 `limorhyde` (linear models for rhythmicity, design) enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
