@@ -2,6 +2,7 @@
 
 [![check-deploy](https://github.com/hugheylab/limorhyde/workflows/check-deploy/badge.svg)](https://github.com/hugheylab/limorhyde/actions)
 [![codecov](https://codecov.io/gh/hugheylab/limorhyde/branch/master/graph/badge.svg)](https://codecov.io/gh/hugheylab/limorhyde)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/9dadf5b9-fac4-48d0-a8db-507efdaa33fa/deploy-status)](https://app.netlify.com/sites/frosty-golick-5f7dd0/deploys)
 
 `limorhyde` (linear models for rhythmicity, design) enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
 
@@ -9,28 +10,29 @@ For details about the method and to see how we used it to analyze circadian tran
 
 ## Installation
 
-If you use RStudio, go to Tools -> Global Options... -> Packages -> Add... (under Secondary repositories), then enter:
+1. Install [`BiocManager`](https://cran.r-project.org/package=BiocManager).
 
-- Name: hugheylab
-- Url: https://hugheylab.github.io/drat/
+    ```r
+    if (!requireNamespace('BiocManager', quietly = TRUE))
+      install.packages('BiocManager')
+    ```
 
-You only have to do this once. Then you can install or update the package by entering:
+1. If you use RStudio, go to Tools → Global Options... → Packages → Add... (under Secondary repositories), then enter:
 
-```R
-if (!requireNamespace('BiocManager', quietly = TRUE))
-  install.packages('BiocManager')
+    - Name: hugheylab
+    - Url: https://hugheylab.github.io/drat/
 
-BiocManager::install('limorhyde')
-```
+    You only have to do this once. Then you can install or update the package by entering:
 
-Alternatively, you can install or update the package by entering:
+    ```r
+    BiocManager::install('limorhyde')
+    ```
 
-```R
-if (!requireNamespace('BiocManager', quietly = TRUE))
-  install.packages('BiocManager')
+    Alternatively, you can install or update the package by entering:
 
-BiocManager::install('limorhyde', site_repository = 'https://hugheylab.github.io/drat/')
-```
+    ```r
+    BiocManager::install('limorhyde', site_repository = 'https://hugheylab.github.io/drat/')
+    ```
 
 ## Usage
 
