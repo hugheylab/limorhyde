@@ -25,6 +25,7 @@ Suggests:
   limma (>= 3.36.1),
   matrixStats (>= 0.56.0),
   org.Mm.eg.db (>= 3.6.0),
+  R.utils (>= 2.11.0),
   rmarkdown (>= 1.9),
   testthat (>= 3.0.4)
 VignetteBuilder: knitr
