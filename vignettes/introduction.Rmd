@@ -151,6 +151,6 @@ ggplot(df) +
   geom_point(aes(x = time, y = expr, shape = cond, color = geneSymbol), size = 2) +
   labs(x = 'Zeitgeber time (h)', y = 'Expression (norm.)') +
   scale_shape(solid = FALSE, guide = FALSE) +
-  scale_color_brewer(type = 'qual', palette = 'Dark2', guide = FALSE) +
+  scale_color_brewer(type = 'qual', palette = 'Dark2', guide = 'none') +
   scale_x_continuous(limits = c(0, 24), breaks = seq(0, 24, 4))
 ```

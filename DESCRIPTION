@@ -1,6 +1,6 @@
 Package: limorhyde
 Title: Differential analysis of rhythmic transcriptome data
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: as.person(c(
   "Jake Hughey <jakejhughey@gmail.com> [aut, cre]", 
   "Jordan Singer <jordan.m.singer@vumc.org> [ctb]"))
