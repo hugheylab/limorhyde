@@ -3,7 +3,7 @@ pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   introduction: introduction.html
-last_built: 2022-02-02T19:54Z
+last_built: 2022-02-09T20:27Z
 urls:
   reference: https://limorhyde.hugheylab.org/reference
   article: https://limorhyde.hugheylab.org/articles

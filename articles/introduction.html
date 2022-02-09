@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">limorhyde</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.1</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Analyzing circadian transcriptome data with LimoRhyde</h1>
             
-            <h4 data-toc-skip class="date">2022-02-02</h4>
+            <h4 data-toc-skip class="date">2022-02-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/hugheylab/limorhyde/blob/HEAD/vignettes/introduction.Rmd" class="external-link"><code>vignettes/introduction.Rmd</code></a></small>
       <div class="hidden name"><code>introduction.Rmd</code></div>
@@ -89,7 +89,8 @@
 
     
     
-<p>LimoRhyde is a framework for differential analysis of rhythmic transcriptome data. This vignette goes through the typical steps of an analysis: identifying rhythmic genes, identifying differentially rhythmic genes, and identifying differentially expressed genes. The dataset is based on total RNA from livers of wild-type and Rev-erb<span class="math inline">\(\alpha/\beta\)</span> knockout mice, with gene expression measured by microarray (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE34018" class="external-link">GSE34018</a>).</p>
+<p>LimoRhyde is a framework for differential analysis of rhythmic transcriptome data. This vignette goes through the typical steps of an analysis: identifying rhythmic genes, identifying differentially rhythmic genes, and identifying differentially expressed genes.</p>
+<p>The dataset is based on total RNA from livers of wild-type and Rev-erb<span class="math inline">\(\alpha/\beta\)</span> knockout mice, with gene expression measured by microarray (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE34018" class="external-link">GSE34018</a>).</p>
 <div class="section level2">
 <h2 id="load-packages-and-set-parameters">Load packages and set parameters<a class="anchor" aria-label="anchor" href="#load-packages-and-set-parameters"></a>
 </h2>
@@ -97,14 +98,11 @@
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st">'annotate'</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://r-datatable.com" class="external-link">'data.table'</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/RevolutionAnalytics/foreach" class="external-link">'foreach'</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/seandavi/GEOquery" class="external-link">'GEOquery'</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">'ggplot2'</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://yihui.org/knitr/" class="external-link">'knitr'</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="http://bioinf.wehi.edu.au/limma" class="external-link">'limma'</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://limorhyde.hugheylab.org">'limorhyde'</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st">'org.Mm.eg.db'</span><span class="op">)</span>
-
-<span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'vignette_functions.R'</span>, package <span class="op">=</span> <span class="st">'limorhyde'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/traversc/qs" class="external-link">'qs'</a></span><span class="op">)</span></code></pre></div>
 <p>Here we specify the zeitgeber period and the q-value cutoffs for rhythmic and differentially rhythmic genes.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">period</span> <span class="op">=</span> <span class="fl">24</span>
@@ -112,314 +110,187 @@
 <span class="va">qvalDrCutoff</span> <span class="op">=</span> <span class="fl">0.1</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="load-the-dataset">Load the dataset<a class="anchor" aria-label="anchor" href="#load-the-dataset"></a>
+<h2 id="load-the-data">Load the data<a class="anchor" aria-label="anchor" href="#load-the-data"></a>
 </h2>
-<p>For simplicity, we use the GEOquery package to load the processed data previously downloaded from NCBI GEO.</p>
+<p>The expression data are in a matrix with one row per gene and one column per sample. The metadata are in a table with one row per sample.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">eset</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/GEOquery/man/getGEO.html" class="external-link">getGEO</a></span><span class="op">(</span>filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'GSE34018_series_matrix.txt'</span>, package <span class="op">=</span> <span class="st">'limorhyde'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Now we construct the data.table of sample metadata.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">sm</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">pData</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">phenoData</a></span><span class="op">(</span><span class="va">eset</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="va">sm</span> <span class="op">=</span> <span class="va">sm</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span><span class="va">title</span>, sample <span class="op">=</span> <span class="va">geo_accession</span>, genotype <span class="op">=</span> <span class="va">`genotype/variation:ch1`</span><span class="op">)</span><span class="op">]</span>
-<span class="va">sm</span><span class="op">[</span>, <span class="va">time</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'_.*'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'.*_ZT'</span>, <span class="st">''</span>, <span class="va">title</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>
-<span class="va">sm</span><span class="op">[</span>, <span class="va">cond</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">genotype</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'wild-type'</span>, <span class="st">'Reverb alpha/beta DKO'</span><span class="op">)</span>,
-                    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'wild-type'</span>, <span class="st">'knockout'</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>
-<span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setorder.html" class="external-link">setorderv</a></span><span class="op">(</span><span class="va">sm</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'cond'</span>, <span class="st">'time'</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/qs/man/qread.html" class="external-link">qread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'GSE34018_expression_data.qs'</span>, package <span class="op">=</span> <span class="st">'limorhyde'</span><span class="op">)</span><span class="op">)</span>
+<span class="va">y</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>
+<span class="co">#&gt;       GSM840516 GSM840517 GSM840518 GSM840519 GSM840520</span>
+<span class="co">#&gt; 11287  7.985859  7.930935  7.674688  7.899531  7.768563</span>
+<span class="co">#&gt; 11298  7.719384  7.737210  7.888502  7.865563  7.772749</span>
+<span class="co">#&gt; 11302 12.594006 12.557148 11.754031 11.851858 11.656702</span>
+<span class="co">#&gt; 11303  7.868566  7.823121  7.907136  7.906957  7.934719</span>
+<span class="co">#&gt; 11304  7.772076  7.930239  7.774563  7.768792  7.740474</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">sm</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">title</th>
-<th align="left">sample</th>
-<th align="left">genotype</th>
-<th align="right">time</th>
-<th align="left">cond</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">wild-type liver_ZT0_rep 1</td>
-<td align="left">GSM840516</td>
-<td align="left">wild-type</td>
-<td align="right">0</td>
-<td align="left">wild-type</td>
-</tr>
-<tr class="even">
-<td align="left">wild-type liver_ZT0_rep 2</td>
-<td align="left">GSM840517</td>
-<td align="left">wild-type</td>
-<td align="right">0</td>
-<td align="left">wild-type</td>
-</tr>
-<tr class="odd">
-<td align="left">wild-type liver_ZT4_rep 1</td>
-<td align="left">GSM840518</td>
-<td align="left">wild-type</td>
-<td align="right">4</td>
-<td align="left">wild-type</td>
-</tr>
-<tr class="even">
-<td align="left">wild-type liver_ZT4_rep 2</td>
-<td align="left">GSM840519</td>
-<td align="left">wild-type</td>
-<td align="right">4</td>
-<td align="left">wild-type</td>
-</tr>
-<tr class="odd">
-<td align="left">wild-type liver_ZT8_rep 1</td>
-<td align="left">GSM840520</td>
-<td align="left">wild-type</td>
-<td align="right">8</td>
-<td align="left">wild-type</td>
-</tr>
-</tbody>
-</table>
-<p>Next we use <code>limorhyde</code> to calculate <code>time_cos</code> and <code>time_sin</code>, which are based on the first harmonic of a Fourier decomposition of the <code>time</code> column, and append them to the <code>sm</code> data.table.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">sm</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">sm</span>, <span class="fu"><a href="../reference/limorhyde.html">limorhyde</a></span><span class="op">(</span><span class="va">sm</span><span class="op">$</span><span class="va">time</span>, <span class="st">'time_'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Finally, we calculate the log-transformed expression values in terms of Entrez Gene IDs.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mapping</span> <span class="op">=</span> <span class="fu">getGeneMapping</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Biobase/man/featureData.html" class="external-link">featureData</a></span><span class="op">(</span><span class="va">eset</span><span class="op">)</span><span class="op">)</span>
-<span class="va">emat</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fu">calcExprsByGene</span><span class="op">(</span><span class="va">eset</span>, <span class="va">mapping</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="va">sm</span><span class="op">$</span><span class="va">sample</span><span class="op">]</span></code></pre></div>
+<span class="va">metadata</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/qs/man/qread.html" class="external-link">qread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'GSE34018_metadata.qs'</span>, package <span class="op">=</span> <span class="st">'limorhyde'</span><span class="op">)</span><span class="op">)</span>
+<span class="va">metadata</span>
+<span class="co">#&gt;     sample_id                                  title              genotype time</span>
+<span class="co">#&gt;  1: GSM840516              wild-type liver_ZT0_rep 1             wild-type    0</span>
+<span class="co">#&gt;  2: GSM840517              wild-type liver_ZT0_rep 2             wild-type    0</span>
+<span class="co">#&gt;  3: GSM840518              wild-type liver_ZT4_rep 1             wild-type    4</span>
+<span class="co">#&gt;  4: GSM840519              wild-type liver_ZT4_rep 2             wild-type    4</span>
+<span class="co">#&gt;  5: GSM840520              wild-type liver_ZT8_rep 1             wild-type    8</span>
+<span class="co">#&gt;  6: GSM840521              wild-type liver_ZT8_rep 2             wild-type    8</span>
+<span class="co">#&gt;  7: GSM840522             wild-type liver_ZT12_rep 1             wild-type   12</span>
+<span class="co">#&gt;  8: GSM840523             wild-type liver_ZT12_rep 2             wild-type   12</span>
+<span class="co">#&gt;  9: GSM840524             wild-type liver_ZT16_rep 1             wild-type   16</span>
+<span class="co">#&gt; 10: GSM840525             wild-type liver_ZT16_rep 2             wild-type   16</span>
+<span class="co">#&gt; 11: GSM840526             wild-type liver_ZT20_rep 1             wild-type   20</span>
+<span class="co">#&gt; 12: GSM840527             wild-type liver_ZT20_rep 2             wild-type   20</span>
+<span class="co">#&gt; 13: GSM840504  Reverb alpha/beta DKO liver_ZT0_rep 1 Reverb alpha/beta DKO    0</span>
+<span class="co">#&gt; 14: GSM840505  Reverb alpha/beta DKO liver_ZT0_rep 2 Reverb alpha/beta DKO    0</span>
+<span class="co">#&gt; 15: GSM840506  Reverb alpha/beta DKO liver_ZT4_rep 1 Reverb alpha/beta DKO    4</span>
+<span class="co">#&gt; 16: GSM840507  Reverb alpha/beta DKO liver_ZT4_rep 2 Reverb alpha/beta DKO    4</span>
+<span class="co">#&gt; 17: GSM840508  Reverb alpha/beta DKO liver_ZT8_rep 1 Reverb alpha/beta DKO    8</span>
+<span class="co">#&gt; 18: GSM840509  Reverb alpha/beta DKO liver_ZT8_rep 2 Reverb alpha/beta DKO    8</span>
+<span class="co">#&gt; 19: GSM840510 Reverb alpha/beta DKO liver_ZT12_rep 1 Reverb alpha/beta DKO   12</span>
+<span class="co">#&gt; 20: GSM840511 Reverb alpha/beta DKO liver_ZT12_rep 2 Reverb alpha/beta DKO   12</span>
+<span class="co">#&gt; 21: GSM840512 Reverb alpha/beta DKO liver_ZT16_rep 1 Reverb alpha/beta DKO   16</span>
+<span class="co">#&gt; 22: GSM840513 Reverb alpha/beta DKO liver_ZT16_rep 2 Reverb alpha/beta DKO   16</span>
+<span class="co">#&gt; 23: GSM840514 Reverb alpha/beta DKO liver_ZT20_rep 1 Reverb alpha/beta DKO   20</span>
+<span class="co">#&gt; 24: GSM840515 Reverb alpha/beta DKO liver_ZT20_rep 2 Reverb alpha/beta DKO   20</span>
+<span class="co">#&gt;     sample_id                                  title              genotype time</span>
+<span class="co">#&gt;          cond</span>
+<span class="co">#&gt;  1: wild-type</span>
+<span class="co">#&gt;  2: wild-type</span>
+<span class="co">#&gt;  3: wild-type</span>
+<span class="co">#&gt;  4: wild-type</span>
+<span class="co">#&gt;  5: wild-type</span>
+<span class="co">#&gt;  6: wild-type</span>
+<span class="co">#&gt;  7: wild-type</span>
+<span class="co">#&gt;  8: wild-type</span>
+<span class="co">#&gt;  9: wild-type</span>
+<span class="co">#&gt; 10: wild-type</span>
+<span class="co">#&gt; 11: wild-type</span>
+<span class="co">#&gt; 12: wild-type</span>
+<span class="co">#&gt; 13:  knockout</span>
+<span class="co">#&gt; 14:  knockout</span>
+<span class="co">#&gt; 15:  knockout</span>
+<span class="co">#&gt; 16:  knockout</span>
+<span class="co">#&gt; 17:  knockout</span>
+<span class="co">#&gt; 18:  knockout</span>
+<span class="co">#&gt; 19:  knockout</span>
+<span class="co">#&gt; 20:  knockout</span>
+<span class="co">#&gt; 21:  knockout</span>
+<span class="co">#&gt; 22:  knockout</span>
+<span class="co">#&gt; 23:  knockout</span>
+<span class="co">#&gt; 24:  knockout</span>
+<span class="co">#&gt;          cond</span></code></pre></div>
+<p>We use <code>limorhyde</code> to calculate <code>time_cos</code> and <code>time_sin</code>, which are based on the first harmonic of a Fourier decomposition of the <code>time</code> column, and append them to the <code>metadata</code> data.table.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">metadata</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">metadata</span>, <span class="fu"><a href="../reference/limorhyde.html">limorhyde</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">time</span>, <span class="st">'time_'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="identify-rhythmic-genes">Identify rhythmic genes<a class="anchor" aria-label="anchor" href="#identify-rhythmic-genes"></a>
 </h2>
 <p>The next three steps use <a href="https://doi.org/doi:10.18129/B9.bioc.limma" class="external-link">limma</a>. We calculate the q-value of rhythmicity for each gene using that gene’s p-value for each condition and adjusting for multiple testing.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">rhyLimma</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>condNow <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/duplicated.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sm</span><span class="op">$</span><span class="va">cond</span><span class="op">)</span>, .combine <span class="op">=</span> <span class="va">rbind</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%do%</a></span> <span class="op">{</span>
-  <span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span>, data <span class="op">=</span> <span class="va">sm</span><span class="op">[</span><span class="va">cond</span> <span class="op">==</span> <span class="va">condNow</span><span class="op">]</span><span class="op">)</span>
-  <span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">emat</span><span class="op">[</span>, <span class="va">sm</span><span class="op">$</span><span class="va">cond</span> <span class="op">==</span> <span class="va">condNow</span><span class="op">]</span>, <span class="va">design</span><span class="op">)</span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">rhyLimma</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>condNow <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/duplicated.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">cond</span><span class="op">)</span>, .combine <span class="op">=</span> <span class="va">rbind</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%do%</a></span> <span class="op">{</span>
+  <span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span>, data <span class="op">=</span> <span class="va">metadata</span><span class="op">[</span><span class="va">cond</span> <span class="op">==</span> <span class="va">condNow</span><span class="op">]</span><span class="op">)</span>
+  <span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span>, <span class="va">metadata</span><span class="op">$</span><span class="va">cond</span> <span class="op">==</span> <span class="va">condNow</span><span class="op">]</span>, <span class="va">design</span><span class="op">)</span>
   <span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/ebayes.html" class="external-link">eBayes</a></span><span class="op">(</span><span class="va">fit</span>, trend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
   <span class="va">rhyNow</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/limma/man/toptable.html" class="external-link">topTable</a></span><span class="op">(</span><span class="va">fit</span>, coef <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>, number <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span>, keep.rownames <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-  <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">rhyNow</span>, <span class="st">'rn'</span>, <span class="st">'geneId'</span><span class="op">)</span>
-  <span class="va">rhyNow</span><span class="op">[</span>, <span class="va">cond</span> <span class="op">:=</span> <span class="va">condNow</span><span class="op">]</span>
-<span class="op">}</span>
+  <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">rhyNow</span>, <span class="st">'rn'</span>, <span class="st">'gene_id'</span><span class="op">)</span>
+  <span class="va">rhyNow</span><span class="op">[</span>, <span class="va">cond</span> <span class="op">:=</span> <span class="va">condNow</span><span class="op">]</span><span class="op">}</span>
 
-<span class="va">rhyLimmaSummary</span> <span class="op">=</span> <span class="va">rhyLimma</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>P.Value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">P.Value</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">geneId</span><span class="op">]</span>
+<span class="va">rhyLimmaSummary</span> <span class="op">=</span> <span class="va">rhyLimma</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>P.Value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">P.Value</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">gene_id</span><span class="op">]</span>
 <span class="va">rhyLimmaSummary</span><span class="op">[</span>, <span class="va">adj.P.Val</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P.Value</span>, method <span class="op">=</span> <span class="st">'BH'</span><span class="op">)</span><span class="op">]</span>
 <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setorder.html" class="external-link">setorderv</a></span><span class="op">(</span><span class="va">rhyLimmaSummary</span>, <span class="st">'adj.P.Val'</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">rhyLimmaSummary</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">geneId</th>
-<th align="right">P.Value</th>
-<th align="right">adj.P.Val</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">13170</td>
-<td align="right">0</td>
-<td align="right">0e+00</td>
-</tr>
-<tr class="even">
-<td align="left">353187</td>
-<td align="right">0</td>
-<td align="right">0e+00</td>
-</tr>
-<tr class="odd">
-<td align="left">15496</td>
-<td align="right">0</td>
-<td align="right">0e+00</td>
-</tr>
-<tr class="even">
-<td align="left">12700</td>
-<td align="right">0</td>
-<td align="right">1e-07</td>
-</tr>
-<tr class="odd">
-<td align="left">321018</td>
-<td align="right">0</td>
-<td align="right">1e-07</td>
-</tr>
-</tbody>
-</table>
+<span class="va">rhyLimmaSummary</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>
+<span class="co">#&gt;    gene_id      P.Value    adj.P.Val</span>
+<span class="co">#&gt; 1:   13170 7.783218e-15 1.334277e-10</span>
+<span class="co">#&gt; 2:  353187 2.580065e-12 2.211503e-08</span>
+<span class="co">#&gt; 3:   15496 4.322474e-12 2.470005e-08</span>
+<span class="co">#&gt; 4:   12700 1.536660e-11 6.585740e-08</span>
+<span class="co">#&gt; 5:  321018 2.628480e-11 9.012007e-08</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="identify-differentially-rhythmic-genes">Identify differentially rhythmic genes<a class="anchor" aria-label="anchor" href="#identify-differentially-rhythmic-genes"></a>
 </h2>
 <p>Differential rhythmicity is based on statistical interactions between <code>cond</code> and the <code>time</code> components. We pass all genes to limma (whose Empirical Bayes does best with many genes), but keep results only for rhythmic genes, and adjust for multiple testing accordingly.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">cond</span> <span class="op">*</span> <span class="op">(</span><span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sm</span><span class="op">)</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">cond</span> <span class="op">*</span> <span class="op">(</span><span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">metadata</span><span class="op">)</span>
 
-<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">emat</span>, <span class="va">design</span><span class="op">)</span>
+<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span>
 <span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/ebayes.html" class="external-link">eBayes</a></span><span class="op">(</span><span class="va">fit</span>, trend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">drLimma</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/limma/man/toptable.html" class="external-link">topTable</a></span><span class="op">(</span><span class="va">fit</span>, coef <span class="op">=</span> <span class="fl">5</span><span class="op">:</span><span class="fl">6</span>, number <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span>, keep.rownames <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">drLimma</span>, <span class="st">'rn'</span>, <span class="st">'geneId'</span><span class="op">)</span>
+<span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">drLimma</span>, <span class="st">'rn'</span>, <span class="st">'gene_id'</span><span class="op">)</span>
 
-<span class="va">drLimma</span> <span class="op">=</span> <span class="va">drLimma</span><span class="op">[</span><span class="va">geneId</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">rhyLimmaSummary</span><span class="op">[</span><span class="va">adj.P.Val</span> <span class="op">&lt;=</span> <span class="va">qvalRhyCutoff</span><span class="op">]</span><span class="op">$</span><span class="va">geneId</span><span class="op">]</span>
+<span class="va">drLimma</span> <span class="op">=</span> <span class="va">drLimma</span><span class="op">[</span><span class="va">gene_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">rhyLimmaSummary</span><span class="op">[</span><span class="va">adj.P.Val</span> <span class="op">&lt;=</span> <span class="va">qvalRhyCutoff</span><span class="op">]</span><span class="op">$</span><span class="va">gene_id</span><span class="op">]</span>
 <span class="va">drLimma</span><span class="op">[</span>, <span class="va">adj.P.Val</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P.Value</span>, method <span class="op">=</span> <span class="st">'BH'</span><span class="op">)</span><span class="op">]</span>
 <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setorder.html" class="external-link">setorderv</a></span><span class="op">(</span><span class="va">drLimma</span>, <span class="st">'adj.P.Val'</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">drLimma</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">geneId</th>
-<th align="right">condknockout.time_cos</th>
-<th align="right">condknockout.time_sin</th>
-<th align="right">AveExpr</th>
-<th align="right">F</th>
-<th align="right">P.Value</th>
-<th align="right">adj.P.Val</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">12686</td>
-<td align="right">-1.5326997</td>
-<td align="right">-0.0433879</td>
-<td align="right">10.157657</td>
-<td align="right">63.69962</td>
-<td align="right">0</td>
-<td align="right">2.0e-07</td>
-</tr>
-<tr class="even">
-<td align="left">353187</td>
-<td align="right">0.6825313</td>
-<td align="right">-0.3539853</td>
-<td align="right">9.422013</td>
-<td align="right">63.33021</td>
-<td align="right">0</td>
-<td align="right">2.0e-07</td>
-</tr>
-<tr class="odd">
-<td align="left">270166</td>
-<td align="right">-1.0453062</td>
-<td align="right">0.2676608</td>
-<td align="right">12.112605</td>
-<td align="right">57.37334</td>
-<td align="right">0</td>
-<td align="right">4.0e-07</td>
-</tr>
-<tr class="even">
-<td align="left">207818</td>
-<td align="right">-0.6412353</td>
-<td align="right">-0.1518757</td>
-<td align="right">10.482197</td>
-<td align="right">57.04975</td>
-<td align="right">0</td>
-<td align="right">4.0e-07</td>
-</tr>
-<tr class="odd">
-<td align="left">15486</td>
-<td align="right">-0.7315828</td>
-<td align="right">0.1282440</td>
-<td align="right">12.503645</td>
-<td align="right">44.83717</td>
-<td align="right">0</td>
-<td align="right">3.5e-06</td>
-</tr>
-</tbody>
-</table>
+<span class="va">drLimma</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>
+<span class="co">#&gt;    gene_id condknockout.time_cos condknockout.time_sin   AveExpr        F</span>
+<span class="co">#&gt; 1:   12686            -1.5326997           -0.04338787 10.157657 63.69962</span>
+<span class="co">#&gt; 2:  353187             0.6825313           -0.35398532  9.422013 63.33021</span>
+<span class="co">#&gt; 3:  270166            -1.0453062            0.26766077 12.112605 57.37334</span>
+<span class="co">#&gt; 4:  207818            -0.6412353           -0.15187573 10.482197 57.04975</span>
+<span class="co">#&gt; 5:   15486            -0.7315828            0.12824401 12.503645 44.83717</span>
+<span class="co">#&gt;         P.Value    adj.P.Val</span>
+<span class="co">#&gt; 1: 9.697947e-11 2.416131e-07</span>
+<span class="co">#&gt; 2: 1.032534e-10 2.416131e-07</span>
+<span class="co">#&gt; 3: 2.965555e-10 3.683675e-07</span>
+<span class="co">#&gt; 4: 3.148440e-10 3.683675e-07</span>
+<span class="co">#&gt; 5: 3.788290e-09 3.545840e-06</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="identify-differentially-expressed-genes">Identify differentially expressed genes<a class="anchor" aria-label="anchor" href="#identify-differentially-expressed-genes"></a>
 </h2>
 <p>Differential expression is based on the coefficient for <code>cond</code> in a linear model with no interaction terms. We pass all genes to limma, but keep results only for non-differentially rhythmic genes, and adjust for multiple testing accordingly.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">cond</span> <span class="op">+</span> <span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span>, data <span class="op">=</span> <span class="va">sm</span><span class="op">)</span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">design</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">cond</span> <span class="op">+</span> <span class="va">time_cos</span> <span class="op">+</span> <span class="va">time_sin</span>, data <span class="op">=</span> <span class="va">metadata</span><span class="op">)</span>
 
-<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">emat</span>, <span class="va">design</span><span class="op">)</span>
+<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/lmFit.html" class="external-link">lmFit</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">design</span><span class="op">)</span>
 <span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/limma/man/ebayes.html" class="external-link">eBayes</a></span><span class="op">(</span><span class="va">fit</span>, trend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">deLimma</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/limma/man/toptable.html" class="external-link">topTable</a></span><span class="op">(</span><span class="va">fit</span>, coef <span class="op">=</span> <span class="fl">2</span>, number <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span>, keep.rownames <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">deLimma</span>, <span class="st">'rn'</span>, <span class="st">'geneId'</span><span class="op">)</span>
+<span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">deLimma</span>, <span class="st">'rn'</span>, <span class="st">'gene_id'</span><span class="op">)</span>
 
-<span class="va">deLimma</span> <span class="op">=</span> <span class="va">deLimma</span><span class="op">[</span><span class="op">!</span><span class="op">(</span><span class="va">geneId</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">drLimma</span><span class="op">[</span><span class="va">adj.P.Val</span> <span class="op">&lt;=</span> <span class="va">qvalDrCutoff</span><span class="op">]</span><span class="op">$</span><span class="va">geneId</span><span class="op">)</span><span class="op">]</span>
+<span class="va">deLimma</span> <span class="op">=</span> <span class="va">deLimma</span><span class="op">[</span><span class="op">!</span><span class="op">(</span><span class="va">gene_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">drLimma</span><span class="op">[</span><span class="va">adj.P.Val</span> <span class="op">&lt;=</span> <span class="va">qvalDrCutoff</span><span class="op">]</span><span class="op">$</span><span class="va">gene_id</span><span class="op">)</span><span class="op">]</span>
 <span class="va">deLimma</span><span class="op">[</span>, <span class="va">adj.P.Val</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P.Value</span>, method <span class="op">=</span> <span class="st">'BH'</span><span class="op">)</span><span class="op">]</span>
 <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setorder.html" class="external-link">setorderv</a></span><span class="op">(</span><span class="va">deLimma</span>, <span class="st">'adj.P.Val'</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">deLimma</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">geneId</th>
-<th align="right">logFC</th>
-<th align="right">AveExpr</th>
-<th align="right">t</th>
-<th align="right">P.Value</th>
-<th align="right">adj.P.Val</th>
-<th align="right">B</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">11302</td>
-<td align="right">-2.271205</td>
-<td align="right">11.260315</td>
-<td align="right">-23.07298</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">33.11228</td>
-</tr>
-<tr class="even">
-<td align="left">68680</td>
-<td align="right">-1.653067</td>
-<td align="right">9.096749</td>
-<td align="right">-18.20762</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">27.87922</td>
-</tr>
-<tr class="odd">
-<td align="left">67442</td>
-<td align="right">-1.208461</td>
-<td align="right">14.375311</td>
-<td align="right">-16.67075</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">25.88117</td>
-</tr>
-<tr class="even">
-<td align="left">71904</td>
-<td align="right">-1.457833</td>
-<td align="right">10.350755</td>
-<td align="right">-16.00287</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">24.95100</td>
-</tr>
-<tr class="odd">
-<td align="left">15507</td>
-<td align="right">-1.158876</td>
-<td align="right">9.441377</td>
-<td align="right">-15.27806</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">23.89567</td>
-</tr>
-</tbody>
-</table>
+<span class="va">deLimma</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>
+<span class="co">#&gt;    gene_id     logFC   AveExpr         t      P.Value    adj.P.Val        B</span>
+<span class="co">#&gt; 1:   11302 -2.271205 11.260315 -23.07298 1.343920e-19 2.076357e-15 33.11228</span>
+<span class="co">#&gt; 2:   68680 -1.653067  9.096748 -18.20762 6.316866e-17 4.879779e-13 27.87922</span>
+<span class="co">#&gt; 3:   67442 -1.208461 14.375311 -16.67075 5.938428e-16 3.058291e-12 25.88117</span>
+<span class="co">#&gt; 4:   71904 -1.457833 10.350755 -16.00287 1.659514e-15 6.409875e-12 24.95100</span>
+<span class="co">#&gt; 5:   15507 -1.158876  9.441377 -15.27806 5.269533e-15 1.628286e-11 23.89567</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="plot-the-results">Plot the results<a class="anchor" aria-label="anchor" href="#plot-the-results"></a>
 </h2>
 <p>Numerous plots are possible. One is a volcano plot of differentially expressed genes.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">deLimma</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">logFC</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">adj.P.Val</span><span class="op">)</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">0.2</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">log</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">*</span><span class="st">' fold-change'</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="op">-</span><span class="va">log</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span><span class="op">*</span><span class="st">' '</span><span class="op">*</span><span class="va">q</span><span class="op">[</span><span class="va">DE</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="introduction_files/figure-html/unnamed-chunk-11-1.png" width="384"></p>
+<p><img src="introduction_files/figure-html/unnamed-chunk-9-1.png" width="384"></p>
 <p>Another is a plot of expression as a function of time and genotype for individual genes. Here we show, from top to bottom, the top rhythmic gene, top differentially rhythmic gene, and top differentially expressed gene by q-value.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">geneIdsNow</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">rhyLimmaSummary</span><span class="op">$</span><span class="va">geneId</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">drLimma</span><span class="op">$</span><span class="va">geneId</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">deLimma</span><span class="op">$</span><span class="va">geneId</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">geneIdsNow</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">rhyLimmaSummary</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span>, <span class="va">drLimma</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span>, <span class="va">deLimma</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span><span class="op">)</span>
 <span class="va">geneSymbolsNow</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/annotate/man/getSYMBOL.html" class="external-link">getSYMBOL</a></span><span class="op">(</span><span class="va">geneIdsNow</span>, <span class="st">'org.Mm.eg.db'</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">emat</span><span class="op">[</span><span class="va">geneIdsNow</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span>
+<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">geneIdsNow</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">geneSymbolsNow</span><span class="op">)</span>
-<span class="va">df</span><span class="op">[</span>, <span class="va">sample</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-toTable.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">emat</span><span class="op">[</span><span class="va">geneIdsNow</span>, <span class="op">]</span><span class="op">)</span><span class="op">]</span>
+<span class="va">df</span><span class="op">[</span>, <span class="va">sample_id</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-toTable.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">geneIdsNow</span>, <span class="op">]</span><span class="op">)</span><span class="op">]</span>
 
-<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">sm</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span><span class="va">sample</span>, <span class="va">cond</span>, <span class="va">time</span><span class="op">)</span><span class="op">]</span>, by <span class="op">=</span> <span class="st">'sample'</span><span class="op">)</span>
-<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/melt.data.table.html" class="external-link">melt</a></span><span class="op">(</span><span class="va">df</span>, measure.vars <span class="op">=</span> <span class="va">geneSymbolsNow</span>, variable.name <span class="op">=</span> <span class="st">'geneSymbol'</span>,
+<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">metadata</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span><span class="va">sample_id</span>, <span class="va">cond</span>, <span class="va">time</span><span class="op">)</span><span class="op">]</span>, by <span class="op">=</span> <span class="st">'sample_id'</span><span class="op">)</span>
+<span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/melt.data.table.html" class="external-link">melt</a></span><span class="op">(</span><span class="va">df</span>, measure.vars <span class="op">=</span> <span class="va">geneSymbolsNow</span>, variable.name <span class="op">=</span> <span class="st">'symbol'</span>,
           value.name <span class="op">=</span> <span class="st">'expr'</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">geneSymbol</span><span class="op">)</span> <span class="op">=</span> <span class="va">geneSymbolsNow</span>
+<span class="va">df</span><span class="op">[</span>, <span class="va">symbol</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">symbol</span>, <span class="va">geneSymbolsNow</span><span class="op">)</span><span class="op">]</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span><span class="va">geneSymbol</span> <span class="op">~</span> <span class="va">cond</span>, scales <span class="op">=</span> <span class="st">'free_y'</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">expr</span>, shape <span class="op">=</span> <span class="va">cond</span>, color <span class="op">=</span> <span class="va">geneSymbol</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span><span class="va">symbol</span> <span class="op">~</span> <span class="va">cond</span>, scales <span class="op">=</span> <span class="st">'free_y'</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">expr</span>, shape <span class="op">=</span> <span class="va">cond</span>, color <span class="op">=</span> <span class="va">symbol</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">'Zeitgeber time (h)'</span>, y <span class="op">=</span> <span class="st">'Expression (norm.)'</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_shape.html" class="external-link">scale_shape</a></span><span class="op">(</span>solid <span class="op">=</span> <span class="cn">FALSE</span>, guide <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_shape.html" class="external-link">scale_shape</a></span><span class="op">(</span>solid <span class="op">=</span> <span class="cn">FALSE</span>, guide <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_color_brewer</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">'qual'</span>, palette <span class="op">=</span> <span class="st">'Dark2'</span>, guide <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; Warning: It is deprecated to specify `guide = FALSE` to remove a guide. Please</span>
-<span class="co">#&gt; use `guide = "none"` instead.</span></code></pre></div>
-<p><img src="introduction_files/figure-html/unnamed-chunk-12-1.png" width="480"></p>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">24</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="introduction_files/figure-html/unnamed-chunk-10-1.png" width="480"></p>
 </div>
   </div>
 
