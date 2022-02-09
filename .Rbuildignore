@@ -6,3 +6,4 @@
 ^\.circleci$
 ^NEWS\.md$
 ^\.github$
+^data-raw$

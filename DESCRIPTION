@@ -1,9 +1,9 @@
 Package: limorhyde
 Title: Differential analysis of rhythmic transcriptome data
-Version: 1.0.0
-Authors@R: as.person(c(
-  "Jake Hughey <jakejhughey@gmail.com> [aut, cre]", 
-  "Jordan Singer <jordan.m.singer@vumc.org> [ctb]"))
+Version: 1.0.1
+Authors@R: c(
+  person('Jake', 'Hughey', , 'jakejhughey@gmail.com', c('aut', 'cre')), 
+  person('Jordan', 'Singer', , 'jordan.m.singer@vumc.org', 'ctb'))
 Description: A flexible approach, inspired by cosinor regression, for
   differential analysis of rhythmic transcriptome data. See Singer and Hughey
   (2018) <doi:10.1177/0748730418813785>.
@@ -20,13 +20,12 @@ Suggests:
   annotate (>= 1.58.0),
   data.table (>= 1.12.2),
   foreach (>= 1.4.4),
-  GEOquery (>= 2.48.0),
   ggplot2 (>= 2.2.1),
   knitr (>= 1.20),
   limma (>= 3.36.1),
   matrixStats (>= 0.56.0),
   org.Mm.eg.db (>= 3.6.0),
-  R.utils (>= 2.11.0),
+  qs (>= 0.25.2),
   rmarkdown (>= 1.9),
   testthat (>= 3.0.4)
 VignetteBuilder: knitr
