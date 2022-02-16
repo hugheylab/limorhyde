@@ -1,5 +1,5 @@
 Package: limorhyde
-Title: Differential analysis of rhythmic transcriptome data
+Title: Differential Analysis of Rhythmic Transcriptome Data
 Version: 1.0.1
 Authors@R: c(
   person('Jake', 'Hughey', , 'jakejhughey@gmail.com', c('aut', 'cre')), 
