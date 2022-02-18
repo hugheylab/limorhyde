@@ -3,12 +3,21 @@
 [![check-deploy](https://github.com/hugheylab/limorhyde/workflows/check-deploy/badge.svg)](https://github.com/hugheylab/limorhyde/actions)
 [![codecov](https://codecov.io/gh/hugheylab/limorhyde/branch/master/graph/badge.svg)](https://codecov.io/gh/hugheylab/limorhyde)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/9dadf5b9-fac4-48d0-a8db-507efdaa33fa/deploy-status)](https://app.netlify.com/sites/frosty-golick-5f7dd0/deploys)
+[![CRAN Status](https://www.r-pkg.org/badges/version/limorhyde)](https://cran.r-project.org/package=limorhyde)
 
 `limorhyde` (linear models for rhythmicity, design) enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
 
 For details about the method and to see how we used it to analyze circadian transcriptome data from various experimental designs, check out the [paper](https://doi.org/10.1177/0748730418813785) and the [accompanying results](https://doi.org/10.6084/m9.figshare.5945569).
 
 ## Installation
+
+### Option 1: CRAN
+
+```r
+install.packages('limorhyde')
+```
+
+### Option 2: Hughey Lab Drat Repository
 
 1. Install [`BiocManager`](https://cran.r-project.org/package=BiocManager).
 
