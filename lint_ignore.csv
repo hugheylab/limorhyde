@@ -1,0 +1,5 @@
+filename,line_number,message,line
+vignettes/introduction.Rmd,68,Variable and function name style should be camelCase.,"rhyLimmaSummary[, adj.P.Val := p.adjust(P.Value, method = 'BH')]"
+vignettes/introduction.Rmd,86,Variable and function name style should be camelCase.,"drLimma[, adj.P.Val := p.adjust(P.Value, method = 'BH')]"
+vignettes/introduction.Rmd,104,Variable and function name style should be camelCase.,"deLimma[, adj.P.Val := p.adjust(P.Value, method = 'BH')]"
+vignettes/introduction.Rmd,126,Variable and function name style should be camelCase.,"df[, sample_id := colnames(y[geneIdsNow, ])]"

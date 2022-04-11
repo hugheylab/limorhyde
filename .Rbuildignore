@@ -6,3 +6,4 @@
 ^\.github$
 ^data-raw$
 ^cran-comments\.md$
+^lint_ignore\.csv$
