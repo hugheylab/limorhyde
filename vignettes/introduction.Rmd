@@ -113,7 +113,7 @@ Numerous plots are possible. One is a volcano plot of differentially expressed g
 ```{r, fig.width = 4, fig.height = 3}
 ggplot(deLimma) +
   geom_point(aes(x = logFC, y = -log10(adj.P.Val)), size = 0.2, alpha = 0.5) +
-  labs(x = expression(log[2]*' fold-change'), y = expression(-log[10]*' '*q[DE]))
+  labs(x = expression(log[2] * ' fold-change'), y = expression(-log[10] * ' ' * q[DE]))
 ```
 
 Another is a plot of expression as a function of time and genotype for individual genes. Here we show, from top to bottom, the top rhythmic gene, top differentially rhythmic gene, and top differentially expressed gene by q-value.

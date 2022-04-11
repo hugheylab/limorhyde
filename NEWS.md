@@ -1,3 +1,6 @@
+# limorhyde 1.0.2
+* Updated style to match lab standard.
+
 # limorhyde 1.0.1
 * Updated external dataset for vignette.
 

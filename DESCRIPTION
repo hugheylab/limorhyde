@@ -1,6 +1,6 @@
 Package: limorhyde
 Title: Differential Analysis of Rhythmic Transcriptome Data
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
   person('Jake', 'Hughey', , 'jakejhughey@gmail.com', c('aut', 'cre')), 
   person('Jordan', 'Singer', , 'jordan.m.singer@vumc.org', 'ctb'))
