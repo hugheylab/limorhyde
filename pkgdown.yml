@@ -1,9 +1,9 @@
 pandoc: 2.7.3
-pkgdown: 2.0.2
+pkgdown: 2.0.3
 pkgdown_sha: ~
 articles:
   introduction: introduction.html
-last_built: 2022-04-11T17:57Z
+last_built: 2022-05-09T17:10Z
 urls:
   reference: https://limorhyde.hugheylab.org/reference
   article: https://limorhyde.hugheylab.org/articles
