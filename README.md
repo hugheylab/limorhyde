@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/hugheylab/limorhyde/branch/master/graph/badge.svg)](https://codecov.io/gh/hugheylab/limorhyde)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/9dadf5b9-fac4-48d0-a8db-507efdaa33fa/deploy-status)](https://app.netlify.com/sites/frosty-golick-5f7dd0/deploys)
 [![CRAN Status](https://www.r-pkg.org/badges/version/limorhyde)](https://cran.r-project.org/package=limorhyde)
+[![drat version](https://raw.githubusercontent.com/hugheylab/drat/gh-pages/badges/limorhyde_drat_badge.svg)](https://github.com/hugheylab/drat/tree/gh-pages/src/contrib)
 
 `limorhyde` (linear models for rhythmicity, design) enables differential analysis of circadian transcriptome data using state-of-the-art methods for differential expression.
 
