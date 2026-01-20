@@ -26,7 +26,6 @@ library('ggplot2')
 library('limma')
 library('limorhyde')
 library('org.Mm.eg.db')
-library('qs')
 ```
 
 Here we specify the zeitgeber period and the q-value cutoffs for rhythmic and differentially rhythmic genes.
@@ -40,10 +39,10 @@ qvalDrCutoff = 0.1
 
 The expression data are in a matrix with one row per gene and one column per sample. The metadata are in a table with one row per sample.
 ```{r}
-y = qread(system.file('extdata', 'GSE34018_expression_data.qs', package = 'limorhyde'))
+y = readRDS(system.file('extdata', 'GSE34018_expression_data.rds', package = 'limorhyde'))
 y[1:5, 1:5]
 
-metadata = qread(system.file('extdata', 'GSE34018_metadata.qs', package = 'limorhyde'))
+metadata = readRDS(system.file('extdata', 'GSE34018_metadata.rds', package = 'limorhyde'))
 metadata
 ```
 
