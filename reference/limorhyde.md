@@ -1,0 +1,73 @@
+# Convert a periodic time variable into components usable in linear models
+
+Decompose a periodic time variable into multiple components based on
+either the first harmonic of a Fourier series or on a periodic smoothing
+spline.
+
+## Usage
+
+``` r
+limorhyde(
+  time,
+  colnamePrefix = NULL,
+  period = 24,
+  sinusoid = TRUE,
+  nKnots = 3,
+  intercept = FALSE
+)
+```
+
+## Arguments
+
+- time:
+
+  Numeric vector of times, e.g., at which samples were acquired.
+
+- colnamePrefix:
+
+  Character string with which to prefix the column names of the basis.
+
+- period:
+
+  Number corresponding to the period to use for the decomposition (in
+  the same units as `time`).
+
+- sinusoid:
+
+  If `TRUE`, the decomposition is based on cosinor, i.e., cosine and
+  sine. If `FALSE`, the decomposition is based on a periodic smoothing
+  spline from the `pbs` package.
+
+- nKnots:
+
+  Number of internal knots for the periodic spline. Only used if
+  `sinusoid` is `FALSE`.
+
+- intercept:
+
+  If `TRUE`, a column of ones will be included in the basis.
+
+## Value
+
+A matrix with a row for each sample and a column for each component of
+the time decomposition.
+
+## Examples
+
+``` r
+# create an example data frame
+nSamples = 12
+d = data.frame(
+  sample = paste0('sample_', 1:nSamples),
+  genotype = factor(rep(c('WT', 'KO'), each = nSamples / 2),
+                    levels = c('WT', 'KO')),
+  zt = rep(seq(0, 24 - 24 / nSamples * 2, 24 / nSamples * 2), times = 2),
+  stringsAsFactors = FALSE)
+
+# call limorhyde
+limo = limorhyde(d$zt, 'zt_')
+d = cbind(d, limo)
+
+# create a design matrix that could be used with methods such as limma
+design = model.matrix(~ genotype * (zt_cos + zt_sin), data = d)
+```
